@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools >= 68.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "momentum_gql"
+version = "0.0.0"
+description = "GQL server for momentum app"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "ariadne == 0.20.1", # 0.20.1
+]
+
+[project.urls]
+homepage = "https://github.com/VidithM/Momentum"
+
+[tool.setuptools.package-data]
+"*" = ["*.gql", "*.graphql", "*.graphqls", "*.yaml", "*.yml"]
+
+[tool.bandit.assert_used]
+skips = ["*/test_*.py"]
+
+[tool.mypy]
+install_types = true
+non_interactive = true
+files = ["src/app/"]
+
+[[tool.mypy.overrides]]
+module = ["aiomysql"]
+ignore_missing_imports = true
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+profile = "black"
+sections = "FUTURE, STDLIB, THIRDPARTY, FIRSTPARTY, APP, LOCALFOLDER"
+known_app = ["app"]
+known_third_party = ["ariadne"]
+
+[project.optional-dependencies]
+dev = ["black", "pip-tools", "python-dotenv", "watchfiles"]
