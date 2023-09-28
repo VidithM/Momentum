@@ -1,0 +1,49 @@
+# Type definitions
+
+# About
+
+type About {
+    version: String
+}
+
+# Error
+
+type ErrorResponse {
+    code: String
+    label: String
+    description: String
+    args: [String]
+}
+
+type Community{
+    description: String!
+    users: [User]!
+    posts: [Posts]!
+}
+
+
+type User{
+    name: String!
+    username: String!
+    password: String!
+    email: EmailAddress!
+    communities: [Community]
+    posts: [Post]
+    comments: [Comments]
+}
+
+type Comment{
+    user: User!
+    content: String!
+    timestamp: Datetime!
+    parent: Comment
+    post: Post
+}
+
+type Post{
+    user: User!
+    content: String!
+    timestamp: Datetime!
+    community: Community
+    file: String
+}

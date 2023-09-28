@@ -1,0 +1,16 @@
+# Mutation Definitions
+
+type Mutation {
+
+    create_user(input: CreateUserInput): UserPayload
+    update_user(input: UpdateUserInput): UserPayload
+
+    create_post(input: CreatePostInput): PostPayload
+    update_post(input: UpdatePostInput): PostPayload
+
+    create_comment(input: CreateCommentInput): CommentPayload
+    update_comment(input: UpdateCommentInput): CommentPayload
+
+    create_community(input: CreateCommunityInput): CommunityPayload
+    update_community(input: UpdateCommunityInput): CommunityPayload
+}

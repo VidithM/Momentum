@@ -1,0 +1,4 @@
+# Scalar definitions
+
+scalar Datetime
+scalar EmailAddress
