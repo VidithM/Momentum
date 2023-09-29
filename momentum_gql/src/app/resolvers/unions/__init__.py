@@ -1,0 +1,1 @@
+"""Unions resolvers module."""

@@ -1,0 +1,1 @@
+"""Queries resolvers module."""

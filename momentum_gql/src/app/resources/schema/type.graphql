@@ -16,34 +16,41 @@ type ErrorResponse {
 }
 
 type Community{
+    rid: Int!
     description: String!
     users: [User]!
-    posts: [Posts]!
+    posts: [Post]!
 }
 
 
 type User{
+    rid: Int!
     name: String!
     username: String!
     password: String!
     email: EmailAddress!
     communities: [Community]
     posts: [Post]
-    comments: [Comments]
+    comments: [Comment]
 }
 
 type Comment{
+    rid: Int!
     user: User!
     content: String!
     timestamp: Datetime!
     parent: Comment
     post: Post
+    comments: [Comment]
+
 }
 
 type Post{
+    rid: Int!
     user: User!
     content: String!
     timestamp: Datetime!
     community: Community
+    comments: Comment
     file: String
 }

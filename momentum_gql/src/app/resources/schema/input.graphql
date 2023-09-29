@@ -6,6 +6,7 @@ input DatetimeRangeInput {
 }
 
 input SearchUsersInput {
+    rids: [Int!]
     users: [Int!]
     contents: [String!]
     timestamp: DatetimeRangeInput
@@ -13,6 +14,7 @@ input SearchUsersInput {
 }
 
 input SearchCommentsInput {
+    rids: [Int!]
     users: [Int!]
     contents: [String!]
     timestamp: DatetimeRangeInput
@@ -21,11 +23,13 @@ input SearchCommentsInput {
 }
 
 input SearchCommunitiesInput {
+    rids: [Int!]
     descriptions: [String!]
     users: [Int!]
 }
 
 input SearchPostsInput {
+    rids: [Int!]
     users: [Int!]
     contents: [String!]
     timestamp: DatetimeRangeInput
@@ -60,26 +64,26 @@ input CreateUserInput {
 }
 
 input UpdateUserInput {
-    user: Int!
+    rid: Int!
     content: String
     timestamp: Datetime
     community: Int
 }
 
 input UpdatePostInput {
-    post: Int!
+    rid: Int!
     content: String
     timestamp: Datetime
 }
 
 input UpdateCommentInput {
-    comment: Int!
+    rid: Int!
     content: String
     timestamp: Datetime
 }
 
 input UpdateCommunityInput {
-    communtiy: int!
+    rid: Int!
     description: String
     users: [Int!]
 }
