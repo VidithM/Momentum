@@ -135,15 +135,15 @@ async def create_table(
     """Create the comment table."""
     logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
 
-    query = f"""
-    CREATE TABLE IF NOT EXISTS `{util.SCHEMA}`.`{TABLE}` (
+    query = """
+    CREATE TABLE IF NOT EXISTS `momentum`.`comments` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-        `user` varchar(255) NOT NULL,,
-        `content` text NOT NULL,
+        `user` varchar(255) NOT NULL,
+        `content` TEXT NOT NULL,
         `parent` int(10),
         `timestamp` DATETIME NOT NULL,
         `post` int(10),
-        PRIMARY KEY (`id`),
+        PRIMARY KEY (`id`)
     );
     """
     try:

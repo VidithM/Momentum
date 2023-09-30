@@ -30,7 +30,7 @@ async def update_context(loop) -> ContextValue:
 
     return MyContext(
         db = await aiomysql.connect(host='127.0.0.1', port=3306,
-                              user='root', password='',
+                              user='root', password='rootpassword',
                               db='mysql', loop=loop),
     )
 
@@ -59,21 +59,12 @@ def _handle_quit_signals():
     TIME_TO_QUIT = True
 
 
-async def app_loop():
+def create_app():
     """Main loop"""
     loop = asyncio.get_event_loop()
     loop.add_signal_handler(signal.SIGINT, _handle_quit_signals)
     loop.add_signal_handler(signal.SIGTERM, _handle_quit_signals)
-    await update_context(loop)
+    update_context(loop)
     schema = load_schema()
-    GraphQL(schema, debug=True)
-
-
-def main():
-    """Run the app."""
-    try:
-        load_dotenv(verbose=True)
-    except NameError:
-        pass
-
-    asyncio.run(app_loop())
+    app = GraphQL(schema, debug=True)
+    return app

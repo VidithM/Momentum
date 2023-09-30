@@ -128,15 +128,15 @@ async def create_table(
     """Create the user table."""
     logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
 
-    query = f"""
-    CREATE TABLE IF NOT EXISTS `{util.SCHEMA}`.`{TABLE}` (
+    query = """
+    CREATE TABLE IF NOT EXISTS `momentum`.`users` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `communities` text,
         `password` varchar(255) NOT NULL,
         `username` varchar(255) NOT NULL,
         `name` varchar(255) NOT NULL,
         `email` varchar(255) NOT NULL,
-        PRIMARY KEY (`id`),
+        PRIMARY KEY (`id`)
     );
     """
     try:

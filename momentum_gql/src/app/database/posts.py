@@ -131,15 +131,15 @@ async def create_table(
     """Create the post table."""
     logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
 
-    query = f"""
-    CREATE TABLE IF NOT EXISTS `{util.SCHEMA}`.`{TABLE}` (
+    query = """
+    CREATE TABLE IF NOT EXISTS `momentum`.`posts` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-        `user` varchar(255) NOT NULL,,
+        `user` varchar(255) NOT NULL,
         `content` text NOT NULL,
         `community` int(10) NOT NULL,
         `timestamp` DATETIME NOT NULL,
         `file` MEDIUMBLOB NOT NULL,
-        PRIMARY KEY (`id`),
+        PRIMARY KEY (`id`)
     );
     """
     try:
