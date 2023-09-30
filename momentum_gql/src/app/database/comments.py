@@ -17,7 +17,7 @@ async def _query(
     terms: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Query database for comment info."""
-    logger.debug("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
+    print("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
 
     base_query = f"""
         SELECT
@@ -26,7 +26,7 @@ async def _query(
             `main`.`content`,
             `main`.`parent`,
             `main`.`timestamp`,
-            `main`.`post`,
+            `main`.`post`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -37,9 +37,9 @@ async def _query(
 
     query = util.compose_query(base_query, wheres)
     await cursor.execute(query, args)
-    rows = await cursor.fetchall()
+    rows = list(await cursor.fetchall())
 
-    logger.debug("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
+    print("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
     return rows
 
 
@@ -55,7 +55,7 @@ def _extract_setters(
         args["user"] = data["user"]
 
     if data.get("content"):
-        setters.append("`content` = %(text)s")
+        setters.append("`content` = %(content)s")
         args["content"] = data["content"]
 
     if data.get("parent"):
@@ -112,7 +112,7 @@ async def add(
     data: Dict[str, Any],
 ) -> Tuple[int, str]:
     """Add a comment."""
-    logger.debug("* insert: updating table %s.%s", util.SCHEMA, TABLE)
+    print("* insert: updating table %s.%s", util.SCHEMA, TABLE)
 
     query = f"""\
             INSERT INTO `{util.SCHEMA}`.`{TABLE}` SET
@@ -126,14 +126,14 @@ async def add(
     query += "\n" + ",\n".join(setters)
     await cursor.execute(query, args)
 
-    return cursor.lastrowid, args["rid"]
+    return cursor.lastrowid, args.get("rid", "")
 
 
 async def create_table(
     cursor: aiomysql.Cursor,
 ) -> bool:
     """Create the comment table."""
-    logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
+    print("* creating table %s.%s", util.SCHEMA, TABLE)
 
     query = """
     CREATE TABLE IF NOT EXISTS `momentum`.`comments` (
@@ -159,12 +159,12 @@ async def search_by_rids(
     cursor: aiomysql.Cursor,
     _,
     rids: Sequence[int],
-) -> Dict[int, Any]:
-    """Query database for comment info."""
+) -> List[Dict[str, Any]]:
+    """Query database for user info."""
     terms = {
         "rids": rids,
     }
-    return {row["rid"]: row for row in await _query(cursor, _, terms)}
+    return await _query(cursor, _, terms)
 
 
 async def search(
@@ -173,7 +173,7 @@ async def search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search comments."""
-    logger.debug("* search: querying table %s.%s", util.SCHEMA, TABLE)
+    print("* search: querying table %s.%s", util.SCHEMA, TABLE)
 
     base_query = f"""\
             SELECT
@@ -191,7 +191,7 @@ async def search(
 
     rows = await cursor.fetchall()
 
-    return [row[0] for row in rows]
+    return [row["rid"] for row in rows]
 
 
 async def update(
@@ -200,7 +200,7 @@ async def update(
     data: Dict[str, Any],
 ) -> None:
     """Update a comment."""
-    logger.debug("* update: updating table %s.%s", util.SCHEMA, TABLE)
+    print("* update: updating table %s.%s", util.SCHEMA, TABLE)
 
     args: Dict[str, Any] = {}
     setters: List[str] = []

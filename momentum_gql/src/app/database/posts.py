@@ -26,7 +26,7 @@ async def _query(
             `main`.`content`,
             `main`.`community`,
             `main`.`timestamp`,
-            `main`.`file`,
+            `main`.`file`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -36,8 +36,9 @@ async def _query(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
+    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
-    rows = await cursor.fetchall()
+    rows = list(await cursor.fetchall())
 
     logger.debug("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
     return rows
@@ -55,7 +56,7 @@ def _extract_setters(
         args["user"] = data["user"]
 
     if data.get("content"):
-        setters.append("`content` = %(text)s")
+        setters.append("`content` = %(content)s")
         args["content"] = data["content"]
 
     if data.get("community"):
@@ -122,7 +123,7 @@ async def add(
     query += "\n" + ",\n".join(setters)
     await cursor.execute(query, args)
 
-    return cursor.lastrowid, args["rid"]
+    return cursor.lastrowid, args.get("rid", "")
 
 
 async def create_table(
@@ -138,7 +139,7 @@ async def create_table(
         `content` text NOT NULL,
         `community` int(10) NOT NULL,
         `timestamp` DATETIME NOT NULL,
-        `file` MEDIUMBLOB NOT NULL,
+        `file` MEDIUMBLOB,
         PRIMARY KEY (`id`)
     );
     """
@@ -155,12 +156,12 @@ async def search_by_rids(
     cursor: aiomysql.Cursor,
     _,
     rids: Sequence[int],
-) -> Dict[int, Any]:
-    """Query database for post info."""
+) -> List[Dict[str, Any]]:
+    """Query database for user info."""
     terms = {
         "rids": rids,
     }
-    return {row["rid"]: row for row in await _query(cursor, _, terms)}
+    return await _query(cursor, _, terms)
 
 
 async def search(
@@ -187,7 +188,7 @@ async def search(
 
     rows = await cursor.fetchall()
 
-    return [row[0] for row in rows]
+    return [row["rid"] for row in rows]
 
 
 async def update(

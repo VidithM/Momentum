@@ -54,20 +54,22 @@ input CreatePostInput {
     content: String!
     timestamp: Datetime!
     community: Int!
+    file: String
 }
 
 input CreateUserInput {
-    user: Int!
-    content: String!
-    timestamp: Datetime!
-    community: Int!
+    name: String!
+    username: String!
+    password: String!
+    email: EmailAddress!
 }
 
 input UpdateUserInput {
     rid: Int!
-    content: String
-    timestamp: Datetime
-    community: Int
+    name: String
+    username: String
+    password: String
+    email: EmailAddress
 }
 
 input UpdatePostInput {

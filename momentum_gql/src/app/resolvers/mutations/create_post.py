@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import posts as sql_post
 
@@ -18,17 +19,17 @@ async def _add_post(
     data: Dict[str, Any],
 ) -> int:
     """Create a post."""
-    async with info.context.db.acquire() as connection:
-        await connection.begin()
+    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
+        # await connection.begin()
 
         try:
             rid, _ = await sql_post.add(connection, parent, data)
         except Exception:
             logger.error("Rolling back update due to exception.")
-            await connection.rollback()
+            await info.context["db"].rollback()
             raise
 
-        await connection.commit()
+        await info.context["db"].commit()
 
         return rid
 
@@ -40,15 +41,13 @@ async def create_post(
     input: Dict[str, Any],  # pylint: disable=redefined-builtin
 ) -> Dict[str, Any]:
     """Resolve add post."""
-    try:
-        rid = await _add_post(
-            parent,
-            info,
-            input,
-        )
-    except Exception as err:
-        return {
-            "error": str(err),
-        }
+    rid = await _add_post(
+        parent,
+        info,
+        input,
+    )
 
-    return {"post": await sql_post.search_by_rids(info.context.db.cursor, info, [rid])}
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    post = await sql_post.search_by_rids(cur, info, [rid])
+    await cur.close()
+    return {"post": post[0]}

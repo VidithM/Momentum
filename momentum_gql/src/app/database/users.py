@@ -17,7 +17,7 @@ async def _query(
     terms: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """Query database for user info."""
-    logger.debug("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
+    print("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
 
     base_query = f"""
         SELECT
@@ -26,7 +26,7 @@ async def _query(
             `main`.`password`,
             `main`.`username`,
             `main`.`name`,
-            `main`.`email`,
+            `main`.`email`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -36,10 +36,12 @@ async def _query(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
+    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
     rows = await cursor.fetchall()
 
-    logger.debug("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
+    print("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
+    print(rows)
     return rows
 
 
@@ -105,7 +107,7 @@ async def add(
     data: Dict[str, Any],
 ) -> Tuple[int, str]:
     """Add a user."""
-    logger.debug("* insert: updating table %s.%s", util.SCHEMA, TABLE)
+    print("* insert: updating table %s.%s", util.SCHEMA, TABLE)
 
     query = f"""\
             INSERT INTO `{util.SCHEMA}`.`{TABLE}` SET
@@ -119,14 +121,14 @@ async def add(
     query += "\n" + ",\n".join(setters)
     await cursor.execute(query, args)
 
-    return cursor.lastrowid, args["rid"]
+    return cursor.lastrowid, args.get("rid", "")
 
 
 async def create_table(
     cursor: aiomysql.Cursor,
 ) -> bool:
     """Create the user table."""
-    logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
+    print("* creating table %s.%s", util.SCHEMA, TABLE)
 
     query = """
     CREATE TABLE IF NOT EXISTS `momentum`.`users` (
@@ -152,12 +154,12 @@ async def search_by_rids(
     cursor: aiomysql.Cursor,
     _,
     rids: Sequence[int],
-) -> Dict[int, Any]:
+) -> List[Dict[str, Any]]:
     """Query database for user info."""
     terms = {
         "rids": rids,
     }
-    return {row["rid"]: row for row in await _query(cursor, _, terms)}
+    return await _query(cursor, _, terms)
 
 
 async def search(
@@ -166,7 +168,7 @@ async def search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search Users."""
-    logger.debug("* search: querying table %s.%s", util.SCHEMA, TABLE)
+    print("* search: querying table %s.%s", util.SCHEMA, TABLE)
 
     base_query = f"""\
             SELECT
@@ -179,12 +181,12 @@ async def search(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
-
+    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
 
     rows = await cursor.fetchall()
 
-    return [row[0] for row in rows]
+    return [row["rid"] for row in rows]
 
 
 async def update(
@@ -193,7 +195,7 @@ async def update(
     data: Dict[str, Any],
 ) -> None:
     """Update a user."""
-    logger.debug("* update: updating table %s.%s", util.SCHEMA, TABLE)
+    print("* update: updating table %s.%s", util.SCHEMA, TABLE)
 
     args: Dict[str, Any] = {}
     setters: List[str] = []

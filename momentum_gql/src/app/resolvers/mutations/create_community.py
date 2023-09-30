@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import communities as sql_community
 
@@ -18,17 +19,17 @@ async def _add_community(
     data: Dict[str, Any],
 ) -> int:
     """Create a community."""
-    async with info.context.db.acquire() as connection:
-        await connection.begin()
+    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
+        # await connection.begin()
 
         try:
             rid, _ = await sql_community.add(connection, parent, data)
         except Exception:
             logger.error("Rolling back update due to exception.")
-            await connection.rollback()
+            await info.context["db"].rollback()
             raise
 
-        await connection.commit()
+        await info.context["db"].commit()
 
         return rid
 
@@ -51,4 +52,8 @@ async def create_community(
             "error": str(err),
         }
 
-    return {"community": await sql_community.search_by_rids(info.context.db.cursor, info, [rid])}
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    community = await sql_community.search_by_rids(cur, info, [rid])
+    print(community)
+    cur.close()
+    return {"community": community[0]}

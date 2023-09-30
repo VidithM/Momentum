@@ -1,11 +1,13 @@
-"""Work Order resolver."""
+"""Community resolver."""
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import posts, users
+
 
 logger = logging.getLogger(__name__)
 
@@ -13,33 +15,38 @@ _resolver = ObjectType("Community")
 
 @_resolver.field("users")
 async def resolve_users(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
-) -> Optional[Dict[str, Any]]:
+    info: GraphQLResolveInfo,
+) -> Optional[List[Dict[str, Any]]]:
     """Get users information."""
     terms = {
-        "community": parent["rid"]
+        "rids": [parent["users"]]
     }
+    print(terms)
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await users.search(
-        info.context.db.cursor,
+        cur,
         info,
         terms,
     )
-    return await users.search_by_rids(info.context.db.cursor, info, rids)
+    print(rids)
+    return (await users.search_by_rids(cur, info, rids))
 
 
 @_resolver.field("posts")
 async def resolve_posts(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get posts information."""
+    print(parent)
     terms = {
-        "community": parent["rid"]
+        "communities": [parent["rid"]]
     }
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await posts.search(
-        info.context.db.cursor,
+        cur,
         info,
         terms,
     )
-    return await posts.search_by_rids(info.context.db.cursor, info, rids)
+    return (await posts.search_by_rids(cur, info, rids))

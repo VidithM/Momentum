@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ariadne import QueryType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import comments as sql_comments
 
@@ -18,7 +19,8 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search comments."""
-    return await sql_comments.search(info.context.db.cursor, info, terms)
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return await sql_comments.search(cur, info, terms)
 
 
 @_resolver.field("search_comments")
@@ -37,8 +39,12 @@ async def search_comments(
         terms,
     )
 
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    comments = await sql_comments.search_by_rids(cur, info, rids)
+    await cur.close()
+
     return {
-        "comments": sql_comments.search_by_rids(info.context.db.cursor, info, rids)
+        "comments": comments
         if rids
         else None,
         "error": error,

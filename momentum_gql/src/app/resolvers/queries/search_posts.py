@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ariadne import QueryType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import posts as sql_posts
 
@@ -18,7 +19,8 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search posts."""
-    return await sql_posts.search(info.context.db.cursor, info, terms)
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return await sql_posts.search(cur, info, terms)
 
 
 @_resolver.field("search_posts")
@@ -36,9 +38,13 @@ async def search_posts(
         info,
         terms,
     )
+    print(rids)
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    posts = await sql_posts.search_by_rids(cur, info, rids)
+    await cur.close()
 
     return {
-        "posts": sql_posts.search_by_rids(info.context.db.cursor, info, rids)
+        "posts": posts
         if rids
         else None,
         "error": error,

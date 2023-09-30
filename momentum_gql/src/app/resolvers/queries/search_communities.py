@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ariadne import QueryType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import communities as sql_communities
 
@@ -18,7 +19,8 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search communities."""
-    return await sql_communities.search(info.context.db.cursor, info, terms)
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return await sql_communities.search(cur, info, terms)
 
 
 @_resolver.field("search_communities")
@@ -37,8 +39,12 @@ async def search_communities(
         terms,
     )
 
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    communities = await sql_communities.search_by_rids(cur, info, rids)
+    await cur.close()
+
     return {
-        "communities": sql_communities.search_by_rids(info.context.db.cursor, info, rids)
+        "communities": communities
         if rids
         else None,
         "error": error,

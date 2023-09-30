@@ -23,7 +23,7 @@ async def _query(
         SELECT
             `main`.`id` AS `rid`,
             `main`.`description`,
-            `main`.`users`,
+            `main`.`users`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -33,8 +33,9 @@ async def _query(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
+    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
-    rows = await cursor.fetchall()
+    rows = list(await cursor.fetchall())
 
     logger.debug("* query: %s.%s %s rows returned", util.SCHEMA, TABLE, len(rows))
     return rows
@@ -96,7 +97,7 @@ async def add(
     query += "\n" + ",\n".join(setters)
     await cursor.execute(query, args)
 
-    return cursor.lastrowid, args["rid"]
+    return cursor.lastrowid, args.get("rid", "")
 
 
 async def create_table(
@@ -126,12 +127,12 @@ async def search_by_rids(
     cursor: aiomysql.Cursor,
     _,
     rids: Sequence[int],
-) -> Dict[int, Any]:
-    """Query database for community info."""
+) -> List[Dict[str, Any]]:
+    """Query database for user info."""
     terms = {
         "rids": rids,
     }
-    return {row["rid"]: row for row in await _query(cursor, _, terms)}
+    return await _query(cursor, _, terms)
 
 
 async def search(
@@ -155,10 +156,10 @@ async def search(
     query = util.compose_query(base_query, wheres)
 
     await cursor.execute(query, args)
-
+    print(cursor.mogrify(query, args))
     rows = await cursor.fetchall()
-
-    return [row[0] for row in rows]
+    print(rows)
+    return [row["rid"] for row in rows]
 
 
 async def update(

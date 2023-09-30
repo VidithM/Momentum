@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import comments as sql_comment
 
@@ -17,18 +18,18 @@ async def _update_comment(
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a comment."""
-    async with info.context.db.acquire() as connection:
-        await connection.begin()
+    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
+        # await connection.begin()
 
         try:
             await sql_comment.update(connection, info, data)
-
         except Exception:
             logger.error("Rolling back update due to exception.")
-            await connection.rollback()
+            await info.context["db"].rollback()
             raise
 
-        await connection.commit()
+
+        await info.context["db"].commit()
     return data["rid"]
 
 
@@ -49,5 +50,8 @@ async def update_comment(
         return {
             "error": str(err),
         }
-
-    return {"comment": await sql_comment.search_by_rids(info.context.db.cursor, info, [rid])}
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    comment = await sql_comment.search_by_rids(cur, info, [rid])
+    print(comment)
+    await cur.close()
+    return {"comment": comment[0]}

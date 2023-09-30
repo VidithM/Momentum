@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import communities, users, comments
 
@@ -13,33 +14,36 @@ _resolver = ObjectType("Post")
 
 @_resolver.field("community")
 async def resolve_community(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get community information."""
-    return await communities.search_by_rids(info.context.db.cursor, info, parent["community"])
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return (await communities.search_by_rids(cur, info, [parent["community"]]))[0]
 
 
 @_resolver.field("user")
 async def resolve_user(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get user information."""
-    return await users.search_by_rids(info.context.db.cursor, info, [parent["user"]])
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return (await users.search_by_rids(cur, info, [parent["user"]]))[0]
 
 @_resolver.field("comments")
 async def resolve_comments(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get comments information."""
     terms = {
-        "post": parent["rid"]
+        "posts": [parent["rid"]]
     }
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await comments.search(
-        info.context.db.cursor,
+        cur,
         info,
         terms,
     )
-    return await comments.search_by_rids(info.context.db.cursor, info, rids)
+    return (await comments.search_by_rids(cur, info, rids))

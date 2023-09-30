@@ -5,7 +5,7 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
-SCHEMA = "momentup"
+SCHEMA = "momentum"
 
 
 def compose_query(

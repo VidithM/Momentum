@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import posts, users, comments
 
@@ -13,41 +14,48 @@ _resolver = ObjectType("Comment")
 
 @_resolver.field("post")
 async def resolve_post(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get post information."""
-    return await posts.search_by_rids(info.context.db.cursor, info, parent["post"])
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    post = await posts.search_by_rids(cur, info, [parent["post"]])
+    await cur.close()
+    print(post)
+    return post[0]
 
 
 @_resolver.field("user")
 async def resolve_user(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get user information."""
-    return await users.search_by_rids(info.context.db.cursor, info, [parent["user"]])
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return (await users.search_by_rids(cur, info, [parent["user"]]))[0]
 
 @_resolver.field("comments")
 async def resolve_comments(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get comments information."""
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
     terms = {
-        "post": parent["rid"]
+        "parents": [parent["rid"]]
     }
     rids = await comments.search(
-        info.context.db.cursor,
+        cur,
         info,
         terms,
     )
-    return await comments.search_by_rids(info.context.db.cursor, info, rids)
+    return (await comments.search_by_rids(cur, info, rids))
 
 @_resolver.field("parent")
 async def resolve_comment(
-    info: GraphQLResolveInfo,
     parent: Dict[str, Any],
+    info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get parent information."""
-    return await comments.search_by_rids(info.context.db.cursor, info, parent["parent"])
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    return (await comments.search_by_rids(cur, info, [parent["parent"]]))[0]

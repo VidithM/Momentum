@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
+import aiomysql
 
 from ...database import users as sql_user
 
@@ -17,18 +18,18 @@ async def _update_user(
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a user."""
-    async with info.context.db.acquire() as connection:
-        await connection.begin()
+    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
+        # await connection.begin()
 
         try:
             await sql_user.update(connection, info, data)
-
         except Exception:
             logger.error("Rolling back update due to exception.")
-            await connection.rollback()
+            await info.context["db"].rollback()
             raise
 
-        await connection.commit()
+
+        await info.context["db"].commit()
     return data["rid"]
 
 
@@ -39,15 +40,13 @@ async def update_user(
     input: Dict[str, Any],  # pylint: disable=redefined-builtin
 ) -> Dict[str, Any]:
     """Resolve update user."""
-    try:
-        rid = await _update_user(
-            parent,
-            info,
-            input,
-        )
-    except Exception as err:
-        return {
-            "error": str(err),
-        }
+    rid = await _update_user(
+        parent,
+        info,
+        input,
+    )
 
-    return {"user": await sql_user.search_by_rids(info.context.db.cursor, info, [rid])}
+    cur = await info.context["db"].cursor(aiomysql.DictCursor)
+    user = await sql_user.search_by_rids(cur, info, [rid])
+    await cur.close()
+    return {"user": user[0]}

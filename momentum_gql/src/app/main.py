@@ -13,8 +13,6 @@ from ariadne.asgi import GraphQL
 
 from dotenv import load_dotenv
 
-from .resources.context import MyContext
-
 from .resources.schema_utils import make_resolver_list
 
 TIME_TO_QUIT = False
@@ -25,14 +23,14 @@ TIME_TO_QUIT = False
 logger = logging.getLogger(__name__)
 
 
-async def update_context(loop) -> ContextValue:
+async def update_context(_) -> ContextValue:
     """Add extra information to the context."""
-
-    return MyContext(
-        db = await aiomysql.connect(host='127.0.0.1', port=3306,
+    loop = asyncio.get_running_loop()
+    return {
+        "db": await aiomysql.connect(host='127.0.0.1', port=3306,
                               user='root', password='rootpassword',
                               db='mysql', loop=loop),
-    )
+    }
 
 
 def load_schema() -> GraphQLSchema:
@@ -64,7 +62,6 @@ def create_app():
     loop = asyncio.get_event_loop()
     loop.add_signal_handler(signal.SIGINT, _handle_quit_signals)
     loop.add_signal_handler(signal.SIGTERM, _handle_quit_signals)
-    update_context(loop)
     schema = load_schema()
-    app = GraphQL(schema, debug=True)
+    app = GraphQL(schema, debug=True, context_value = update_context)
     return app
