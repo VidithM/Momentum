@@ -5,7 +5,6 @@ from typing import Any, Dict
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
 
-from .community_common import enrich_with_rids
 from ...database import communities as sql_community
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,6 @@ async def _add_community(
     data: Dict[str, Any],
 ) -> int:
     """Create a community."""
-    await enrich_with_rids(info, logger, data)
     async with info.context.db.acquire() as connection:
         await connection.begin()
 

@@ -1,9 +1,9 @@
 """Resolver for EmailAddress scalar."""
 from ariadne import ScalarType
 
-datetime_scalar = ScalarType("EmailAddress")
+email_scalar = ScalarType("EmailAddress")
 
-@datetime_scalar.serializer
-def serialize_datetime(value):
+@email_scalar.serializer
+def serialize_email(value):
     """Resolver for EmailAddress scalar."""
     return value

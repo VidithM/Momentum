@@ -11,6 +11,8 @@ requires-python = ">=3.10"
 
 dependencies = [
     "ariadne == 0.20.1", # 0.20.1
+    "python-dotenv",
+    "aiomysql",
 ]
 
 [project.urls]
@@ -40,4 +42,4 @@ known_app = ["app"]
 known_third_party = ["ariadne"]
 
 [project.optional-dependencies]
-dev = ["black", "pip-tools", "python-dotenv", "watchfiles"]
+dev = ["black", "pip-tools", "watchfiles"]

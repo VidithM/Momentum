@@ -44,10 +44,10 @@ async def resolve_comments(
     )
     return await comments.search_by_rids(info.context.db.cursor, info, rids)
 
-@_resolver.field("comment")
+@_resolver.field("parent")
 async def resolve_comment(
     info: GraphQLResolveInfo,
     parent: Dict[str, Any],
 ) -> Optional[Dict[str, Any]]:
-    """Get comment information."""
-    return await comments.search_by_rids(info.context.db.cursor, info, parent["comment"])
+    """Get parent information."""
+    return await comments.search_by_rids(info.context.db.cursor, info, parent["parent"])
