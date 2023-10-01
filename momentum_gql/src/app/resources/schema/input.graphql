@@ -7,10 +7,11 @@ input DatetimeRangeInput {
 
 input SearchUsersInput {
     rids: [Int!]
-    users: [Int!]
-    contents: [String!]
-    timestamp: DatetimeRangeInput
-    community: [Int!]
+    usernames: [String!]
+    names: [Int!]
+    posts: [Int!]
+    emails: [EmailAddress!]
+    communities: [Int!]
 }
 
 input SearchCommentsInput {
