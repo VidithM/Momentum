@@ -9,7 +9,6 @@ input SearchUsersInput {
     rids: [Int!]
     usernames: [String!]
     names: [Int!]
-    posts: [Int!]
     emails: [EmailAddress!]
     communities: [Int!]
 }
@@ -20,7 +19,7 @@ input SearchCommentsInput {
     contents: [String!]
     timestamp: DatetimeRangeInput
     parents: [Int!]
-    post: [Int!]
+    posts: [Int!]
 }
 
 input SearchCommunitiesInput {
