@@ -3,8 +3,21 @@
 ## Description with UI sketch of main use cases
 
 ### Description
+**Overview of functionality**
+We intend to create a Reddit-Twitter-like social media app. The application will support the creation of user accounts with customizable usernames and profile images. The main content of the app will be centered around community-generated posts. Users will be able to link/join their accounts to communities they are interested in. Community posts will be visible to all community members and may contain text as well as image content. Community members will also be able to leave comments on posts. Communities are identified by a title/name and will have a description and optional community image.
+**Application Flow**
+* The landing page of the app will allow users to either create an account or log into an existing account. 
+* Once signed in, users will be directed to a profile page where they can view all of the communities they are in, as well as options to join new communities or create a community. The profile page will also contain data on recent posts that the user has made. 
+* Each community will have page that will have general community info at the top (name, description, image, member count, number of posts), followed by the community posts. There will be an option on the right margin of the page for users to create a new post in the community.
+* Each individual post will have a main container to display contents of the post (author, author profile image, title, body contents), as well as a hidden dropdown container that will display comments associated with that post. Each comment will be a line that contains the username of the commenter and the comment body (text only). Nested comments will not be supported.
+* There will be a common navbar at the top for all pages except for the landing page, which will allow users to logout of their account, go back to the profile page, or go to a separate settings page.
+* The settings page will allow users to modify their username and profile image.
 
-### UI sketch file
+**Current Status**
+The prototype is currently connected with the GraphQL/MariaDB backend and allows for creation of new accounts as well as logging in/logging out of existing accounts. The general layout of the profile page as well as the community page has been established. No other features/pages are fully functional as of yet.
+
+### UI Sketch
+![UISketch](uisketch.jpg)
 
 ## Database design
 
@@ -175,23 +188,24 @@ VALUES (
 
 ## Architectural design
 
-The momentum project is designed as a three tier archetecture.  The client is a Javascript server, which contains the GUI for user interactions.
+The Momentum project is designed as a three tier archetecture.  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
 
 The server itself is a graphql server, which manages interactions with the database and performs some of the relationship logic through resolvers.
 This allows for a simpler table, as relationships don't need to be managed directly in the database.
 
-The dabase is the third part of the architecture, and is a basic single schema four table Myswq database, run in a mariadb container.
+The database is the third part of the architecture, and is a basic single schema four table MySQL database, running in a MariaDB Docker container.
 As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.
 
 ## Prototype
 
 ### Running the Momentum application
 
-Instructions for the front and backends are in the README files in the respective folders.
+Instructions for running the databse is in the README file in `momentum_gql`. The frontend may be launched simply by opening `momentum_frontend/landing.html`
 
-GQL server: Momentum_gql
-Application: Momentum_frontend
+GQL server: `momentum_gql`
+GUI application: `momentum_frontend`
 
 Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and will need to be added via the sql commands.
 
 ### Video recordings of user acceptance tests
+[YouTube Link](https://www.youtube.com/watch?v=3KVG15_2eeI)

@@ -30,6 +30,9 @@ const render = async () => {
     console.log(user);
 
     for(let i = 0; i < user.communities.length; i++){
+        if(user.communities[i] == null){
+            continue;
+        }
         let ok = false;
         for(let j = 0; j < user.communities[i].users.length; j++){
             if(user.communities[i].users[j].rid == uid){
@@ -60,7 +63,7 @@ const render = async () => {
             let community = communities[i];
             community_content += `
                 <li>
-                    <a class="discrete-a">
+                    <a onclick="window.open('./community.html')" class="discrete-a">
                         <div class="dialog-box">
                             <h3>${community.name}</h3>
                             <p>Members: ${community.member_cnt}</p>
