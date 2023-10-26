@@ -3,12 +3,24 @@ from ariadne import QueryType, MutationType, ScalarType, ObjectType
 from ..resolvers.scalars.datetime import serialize_datetime
 from ..resolvers.scalars.emailaddr import serialize_email
 
-from ..resolvers.mutations import create_comment, update_comment, create_community, update_community
-from ..resolvers.mutations import  create_post, update_post, create_user, update_user
+from ..resolvers.mutations import (
+    create_comment,
+    update_comment,
+    create_community,
+    update_community,
+)
+from ..resolvers.mutations import create_post, update_post, create_user, update_user
+from ..resolvers.mutations import delete_community_user, delete_user_community
 
-from ..resolvers.queries import search_comments, search_communities, search_posts, search_users
+
+from ..resolvers.queries import (
+    search_comments,
+    search_communities,
+    search_posts,
+    search_users,
+)
 from ..resolvers.types import user as gql_user, post as gql_post
-from ..resolvers.types import  comment as gql_comment, community as gql_community
+from ..resolvers.types import comment as gql_comment, community as gql_community
 
 
 def make_resolver_list():
@@ -25,7 +37,6 @@ def make_resolver_list():
     datetime_scalar.serializer(serialize_datetime)
     email_scalar.serializer(serialize_email)
 
-
     mutation.set_field("create_comment", create_comment.create_comment)
     mutation.set_field("update_comment", update_comment.update_comment)
 
@@ -37,6 +48,13 @@ def make_resolver_list():
 
     mutation.set_field("create_user", create_user.create_user)
     mutation.set_field("update_user", update_user.update_user)
+
+    mutation.set_field(
+        "delete_community_user", delete_community_user.delete_community_user
+    )
+    mutation.set_field(
+        "delete_user_community", delete_user_community.delete_user_community
+    )
 
     query.set_field("search_users", search_users.search_users)
     query.set_field("search_posts", search_posts.search_posts)
@@ -59,5 +77,13 @@ def make_resolver_list():
     comment.set_field("comments", gql_comment.resolve_comments)
     comment.set_field("parent", gql_comment.resolve_comment)
 
-
-    return [mutation, query, datetime_scalar, email_scalar, comment, user, post, community]
+    return [
+        mutation,
+        query,
+        datetime_scalar,
+        email_scalar,
+        comment,
+        user,
+        post,
+        community,
+    ]

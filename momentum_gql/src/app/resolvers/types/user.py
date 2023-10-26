@@ -6,11 +6,12 @@ from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
 
-from ...database import posts, comments, communities
+from ...database import posts, comments, communities, user_community
 
 logger = logging.getLogger(__name__)
 
 _resolver = ObjectType("User")
+
 
 @_resolver.field("communities")
 async def resolve_communities(
@@ -18,16 +19,16 @@ async def resolve_communities(
     info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get communities information."""
-    terms = {
-        "rids": [parent["communities"]]
-    }
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    rids = await communities.search(
+    rids = await user_community.search_by_user_ids(
         cur,
         info,
-        terms,
+        [parent["rid"]],
     )
-    return (await communities.search_by_rids(cur, info, rids))
+    if rids:
+        return await communities.search_by_rids(cur, info, rids)
+    else:
+        return None
 
 
 @_resolver.field("posts")
@@ -36,16 +37,15 @@ async def resolve_posts(
     info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get posts information."""
-    terms = {
-        "users":[parent["rid"]]
-    }
+    terms = {"users": [parent["rid"]]}
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await posts.search(
         cur,
         info,
         terms,
     )
-    return (await posts.search_by_rids(cur, info, rids))
+    return await posts.search_by_rids(cur, info, rids)
+
 
 @_resolver.field("comments")
 async def resolve_comments(
@@ -53,13 +53,11 @@ async def resolve_comments(
     info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get comments information."""
-    terms = {
-        "users": [parent["rid"]]
-    }
+    terms = {"users": [parent["rid"]]}
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await comments.search(
         await cur,
         info,
         terms,
     )
-    return (await comments.search_by_rids(cur, info, rids))
+    return await comments.search_by_rids(cur, info, rids)

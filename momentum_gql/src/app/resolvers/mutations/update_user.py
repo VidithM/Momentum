@@ -7,10 +7,12 @@ from graphql import GraphQLResolveInfo
 import aiomysql
 
 from ...database import users as sql_user
+from ...database import user_community as ucomm
 
 logger = logging.getLogger(__name__)
 
 _resolver = MutationType()
+
 
 async def _update_user(
     _: Any,
@@ -27,7 +29,25 @@ async def _update_user(
             logger.error("Rolling back update due to exception.")
             await info.context["db"].rollback()
             raise
+        if data.get("communities"):
+            for community in data["communities"]:
+                comm_data = {}
+                comm_data["user_id"] = data["rid"]
+                comm_data["user_ids"] = [data["rid"]]
+                comm_data["community_id"] = community
+                comm_data["community_ids"] = [community]
 
+                print(comm_data)
+                rid = await ucomm.search(connection, _, comm_data)
+                print(rid)
+                if not rid:
+                    try:
+                        _, _ = await ucomm.add(connection, _, comm_data)
+                    except Exception as exc:
+                        logger.error("Rolling back update due to exception.")
+                        logger.error(str(exc))
+                        await info.context["db"].rollback()
+                        raise
 
         await info.context["db"].commit()
     return data["rid"]
@@ -49,4 +69,5 @@ async def update_user(
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
     user = await sql_user.search_by_rids(cur, info, [rid])
     await cur.close()
+    print(user)
     return {"user": user[0]}

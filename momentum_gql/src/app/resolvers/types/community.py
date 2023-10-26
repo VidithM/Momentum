@@ -6,12 +6,13 @@ from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
 
-from ...database import posts, users
+from ...database import posts, users, user_community
 
 
 logger = logging.getLogger(__name__)
 
 _resolver = ObjectType("Community")
+
 
 @_resolver.field("users")
 async def resolve_users(
@@ -19,18 +20,19 @@ async def resolve_users(
     info: GraphQLResolveInfo,
 ) -> Optional[List[Dict[str, Any]]]:
     """Get users information."""
-    terms = {
-        "rids": [parent["users"]]
-    }
+    terms = {"community_ids": [parent["rid"]]}
     print(terms)
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    rids = await users.search(
+    rids = await user_community.search_by_community_ids(
         cur,
         info,
-        terms,
+        [parent["rid"]],
     )
     print(rids)
-    return (await users.search_by_rids(cur, info, rids))
+    if rids:
+        return await users.search_by_rids(cur, info, rids)
+    else:
+        return None
 
 
 @_resolver.field("posts")
@@ -40,13 +42,11 @@ async def resolve_posts(
 ) -> Optional[Dict[str, Any]]:
     """Get posts information."""
     print(parent)
-    terms = {
-        "communities": [parent["rid"]]
-    }
+    terms = {"communities": [parent["rid"]]}
     cur = await info.context["db"].cursor(aiomysql.DictCursor)
     rids = await posts.search(
         cur,
         info,
         terms,
     )
-    return (await posts.search_by_rids(cur, info, rids))
+    return await posts.search_by_rids(cur, info, rids)

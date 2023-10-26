@@ -7,6 +7,7 @@ from graphql import GraphQLResolveInfo
 import aiomysql
 
 from ...database import communities as sql_community
+from ...database import user_community as ucomm
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,22 @@ async def _add_community(
 
         try:
             rid, _ = await sql_community.add(connection, parent, data)
-        except Exception:
+        except Exception as exc:
             logger.error("Rolling back update due to exception.")
+            logger.error(str(exc))
             await info.context["db"].rollback()
             raise
+        # for user in data["users"]:
+        #     comm_data = {}
+        #     comm_data["user_id"] = user
+        #     comm_data["community_id"] = rid
+        #     try:
+        #         _, _ = await ucomm.add(connection, parent, comm_data)
+        #     except Exception as exc:
+        #         logger.error("Rolling back update due to exception.")
+        #         logger.error(str(exc))
+        #         await info.context["db"].rollback()
+        #         raise
 
         await info.context["db"].commit()
 

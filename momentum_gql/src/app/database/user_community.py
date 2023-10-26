@@ -8,7 +8,7 @@ from . import util
 
 logger = logging.getLogger(__name__)
 
-TABLE = "posts"
+TABLE = "user_community"
 
 
 async def _query(
@@ -16,17 +16,14 @@ async def _query(
     _,
     terms: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
-    """Query database for post info."""
+    """Query database for community info."""
     logger.debug("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
 
     base_query = f"""
         SELECT
             `main`.`id` AS `rid`,
-            `main`.`user`,
-            `main`.`content`,
-            `main`.`community`,
-            `main`.`timestamp`,
-            `main`.`file`
+            `main`.`user_id`,
+            `main`.`community_id`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -49,26 +46,15 @@ def _extract_setters(
     setters: List[str],
 ) -> None:
     """Extract info from the data object."""
+    print(data)
+    if data.get("user_id") != None:
+        setters.append("`user_id` = %(user_id)s")
+        args["user_id"] = data["user_id"]
 
-    if data.get("user"):
-        setters.append("`user` = %(user)s")
-        args["user"] = data["user"]
-
-    if data.get("content"):
-        setters.append("`content` = %(content)s")
-        args["content"] = data["content"]
-
-    if data.get("community"):
-        setters.append("`community` = %(community)s")
-        args["community"] = data["community"]
-
-    if data.get("timestamp"):
-        setters.append("`timestamp` = %(timestamp)s")
-        args["timestamp"] = data["timestamp"]
-
-    if data.get("file"):
-        setters.append("`file` = %(file)s")
-        args["file"] = data["file"]
+    if data.get("community_id") != None:
+        setters.append("`community_id` = %(community_id)s")
+        args["community_id"] = data["community_id"]
+    print(setters)
 
 
 def _extract_wheres(  # pylint: disable=too-many-branches, too-many-statements
@@ -82,24 +68,13 @@ def _extract_wheres(  # pylint: disable=too-many-branches, too-many-statements
         wheres.append("`id` IN %(rids)s")
         args["rids"] = terms["rids"]
 
-    if terms.get("users"):
-        wheres.append("`user` IN %(users)s")
-        args["users"] = terms["users"]
+    if terms.get("user_ids"):
+        wheres.append("`user_id` IN %(user_ids)s")
+        args["user_ids"] = terms["user_ids"]
 
-    if terms.get("contents"):
-        wheres.append("`content` IN %(contents)s")
-        args["contents"] = terms["contents"]
-
-    if terms.get("communities"):
-        wheres.append("`community` IN %(communities)s")
-        args["communities"] = terms["communities"]
-
-    if terms.get("timestamp"):
-        wheres.append("`main`.`timestamp` <= %(timestamp_end)s")
-        args["timestamp_end"] = terms["timestamp"]["end_time"]
-
-        wheres.append("`main`.`timestamp` >= %(timestamp_start)s")
-        args["timestamp_start"] = terms["timestamp"]["start_time"]
+    if terms.get("community_ids"):
+        wheres.append("`community_id` IN %(community_ids)s")
+        args["community_ids"] = terms["community_ids"]
 
 
 async def add(
@@ -107,7 +82,7 @@ async def add(
     _,
     data: Dict[str, Any],
 ) -> Tuple[int, str]:
-    """Add a post."""
+    """Add a record."""
     logger.debug("* insert: updating table %s.%s", util.SCHEMA, TABLE)
 
     query = f"""\
@@ -128,17 +103,14 @@ async def add(
 async def create_table(
     cursor: aiomysql.Cursor,
 ) -> bool:
-    """Create the post table."""
+    """Create the user_community table."""
     logger.debug("* creating table %s.%s", util.SCHEMA, TABLE)
 
     query = """
-    CREATE TABLE IF NOT EXISTS `momentum`.`posts` (
+    CREATE TABLE IF NOT EXISTS `momentum`.`user_community` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-        `user` varchar(255) NOT NULL,
-        `content` text NOT NULL,
-        `community` int(10) NOT NULL,
-        `timestamp` DATETIME NOT NULL,
-        `file` MEDIUMBLOB,
+        `user_id` int(10),
+        `community_id`int(10),
         PRIMARY KEY (`id`)
     );
     """
@@ -156,11 +128,69 @@ async def search_by_rids(
     _,
     rids: Sequence[int],
 ) -> List[Dict[str, Any]]:
-    """Query database for user info."""
+    """Query database for record info."""
     terms = {
         "rids": rids,
     }
     return await _query(cursor, _, terms)
+
+
+async def search_by_user_ids(
+    cursor: aiomysql.Cursor,
+    _,
+    rids: Sequence[int],
+) -> List[int]:
+    """Search Communities."""
+    logger.debug("* search: querying table %s.%s", util.SCHEMA, TABLE)
+    if rids == []:
+        return []
+    terms = {
+        "user_ids": rids,
+    }
+    base_query = f"""\
+            SELECT
+                `community_id` as `rid`
+            FROM `{util.SCHEMA}`.`{TABLE}` `main`
+        """  # nosec
+
+    wheres: List[str] = []
+    args: Dict[str, Any] = {}
+    _extract_wheres(_, terms, wheres, args)
+
+    query = util.compose_query(base_query, wheres)
+
+    await cursor.execute(query, args)
+    rows = await cursor.fetchall()
+    return [row["rid"] for row in rows]
+
+
+async def search_by_community_ids(
+    cursor: aiomysql.Cursor,
+    _,
+    rids: Sequence[int],
+) -> List[int]:
+    """Search Communities."""
+    logger.debug("* search: querying table %s.%s", util.SCHEMA, TABLE)
+    if rids == []:
+        return []
+    terms = {
+        "community_ids": rids,
+    }
+    base_query = f"""\
+            SELECT
+                DISTINCT `user_id` as `rid`
+            FROM `{util.SCHEMA}`.`{TABLE}` `main`
+        """  # nosec
+
+    wheres: List[str] = []
+    args: Dict[str, Any] = {}
+    _extract_wheres(_, terms, wheres, args)
+
+    query = util.compose_query(base_query, wheres)
+
+    await cursor.execute(query, args)
+    rows = await cursor.fetchall()
+    return [row["rid"] for row in rows]
 
 
 async def search(
@@ -168,7 +198,7 @@ async def search(
     _,
     terms: Dict[str, Any],
 ) -> List[int]:
-    """Search Users."""
+    """Search Communities."""
     logger.debug("* search: querying table %s.%s", util.SCHEMA, TABLE)
 
     base_query = f"""\
@@ -184,9 +214,7 @@ async def search(
     query = util.compose_query(base_query, wheres)
 
     await cursor.execute(query, args)
-
     rows = await cursor.fetchall()
-
     return [row["rid"] for row in rows]
 
 
@@ -195,9 +223,8 @@ async def update(
     _,
     data: Dict[str, Any],
 ) -> None:
-    """Update a post."""
-    logger.debug("* update: updating table %s.%s", util.SCHEMA, TABLE)
-
+    """Update a community."""
+    print("* update: updating table %s.%s", util.SCHEMA, TABLE)
     args: Dict[str, Any] = {}
     setters: List[str] = []
     wheres: List[str] = []
@@ -215,5 +242,5 @@ async def update(
 
     query += "\n" + ",\n".join(setters)
     query += "\nWHERE " + " \nAND ".join(wheres)
-
+    print(cursor.mogrify(query))
     await cursor.execute(query, args)

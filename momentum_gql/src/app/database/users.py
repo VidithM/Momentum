@@ -22,7 +22,6 @@ async def _query(
     base_query = f"""
         SELECT
             `main`.`id` AS `rid`,
-            `main`.`communities`,
             `main`.`password`,
             `main`.`username`,
             `main`.`name`,
@@ -36,7 +35,6 @@ async def _query(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
-    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
     rows = await cursor.fetchall()
 
@@ -51,10 +49,6 @@ def _extract_setters(
     setters: List[str],
 ) -> None:
     """Extract info from the data object."""
-
-    if data.get("communities"):
-        setters.append("`communities` = %(communities)s")
-        args["communities"] = data["communities"]
 
     if data.get("password"):
         setters.append("`password` = %(password)s")
@@ -83,10 +77,6 @@ def _extract_wheres(  # pylint: disable=too-many-branches, too-many-statements
     if terms.get("rids"):
         wheres.append("`id` IN %(rids)s")
         args["rids"] = terms["rids"]
-
-    if terms.get("communities"):
-        wheres.append("`communities` IN %(communities)s")
-        args["communities"] = terms["communities"]
 
     if terms.get("usernames"):
         wheres.append("`username` IN %(usernames)s")
@@ -133,7 +123,6 @@ async def create_table(
     query = """
     CREATE TABLE IF NOT EXISTS `momentum`.`users` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-        `communities` text,
         `password` varchar(255) NOT NULL,
         `username` varchar(255) NOT NULL,
         `name` varchar(255) NOT NULL,
@@ -181,7 +170,6 @@ async def search(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
-    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
 
     rows = await cursor.fetchall()

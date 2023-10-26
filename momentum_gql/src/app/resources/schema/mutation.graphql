@@ -4,6 +4,7 @@ type Mutation {
 
     create_user(input: CreateUserInput): UserPayload
     update_user(input: UpdateUserInput): UserPayload
+    delete_user_community(input: DeleteUserCommInput): UserPayload
 
     create_post(input: CreatePostInput): PostPayload
     update_post(input: UpdatePostInput): PostPayload
@@ -13,4 +14,5 @@ type Mutation {
 
     create_community(input: CreateCommunityInput): CommunityPayload
     update_community(input: UpdateCommunityInput): CommunityPayload
+    delete_community_user(input: DeleteCommUserInout): CommunityPayload
 }

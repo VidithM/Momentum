@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 from .resources.schema_utils import make_resolver_list
 
+
 TIME_TO_QUIT = False
 
 
@@ -28,21 +29,28 @@ async def update_context(_) -> ContextValue:
     """Add extra information to the context."""
     loop = asyncio.get_running_loop()
     res = {
-        "db": await aiomysql.connect(host='127.0.0.1', port=3306,
-                              user='root', password='rootpassword',
-                              db='mysql', loop=loop),
+        "db": await aiomysql.connect(
+            host="127.0.0.1",
+            port=3306,
+            user="root",
+            password="rootpassword",
+            db="mysql",
+            loop=loop,
+        ),
     }
     cur = await res.get("db").cursor(aiomysql.DictCursor)
 
-    from .database import comments, communities, posts, users
+    from .database import comments, communities, posts, users, user_community
 
     # Creates the tables if they don't already exist
     await comments.create_table(cur)
     await communities.create_table(cur)
     await posts.create_table(cur)
     await users.create_table(cur)
+    await user_community.create_table(cur)
 
     return res
+
 
 def load_schema() -> GraphQLSchema:
     """Load GraphQL schema."""
@@ -52,15 +60,12 @@ def load_schema() -> GraphQLSchema:
 
     resolvers = make_resolver_list()
 
-
     logger.debug("Making executable schema")
-    the_schema = make_executable_schema(
-        type_defs,
-        resolvers
-    )
+    the_schema = make_executable_schema(type_defs, resolvers)
     logger.debug("Schema created")
 
     return the_schema
+
 
 def _handle_quit_signals():
     """Handle signals that mean the program should exit."""
@@ -74,5 +79,9 @@ def create_app():
     loop.add_signal_handler(signal.SIGINT, _handle_quit_signals)
     loop.add_signal_handler(signal.SIGTERM, _handle_quit_signals)
     schema = load_schema()
-    app = CORSMiddleware(GraphQL(schema, debug=True, context_value = update_context), allow_origins=["*"], allow_methods=("GET", "POST", "OPTIONS"))
+    app = CORSMiddleware(
+        GraphQL(schema, debug=True, context_value=update_context),
+        allow_origins=["*"],
+        allow_methods=("GET", "POST", "OPTIONS"),
+    )
     return app

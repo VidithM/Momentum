@@ -22,8 +22,7 @@ async def _query(
     base_query = f"""
         SELECT
             `main`.`id` AS `rid`,
-            `main`.`description`,
-            `main`.`users`
+            `main`.`description`
         FROM `{util.SCHEMA}`.`{TABLE}` `main`
         """  # nosec
 
@@ -33,7 +32,6 @@ async def _query(
     _extract_wheres(_, terms, wheres, args)
 
     query = util.compose_query(base_query, wheres)
-    print(cursor.mogrify(query, args))
     await cursor.execute(query, args)
     rows = list(await cursor.fetchall())
 
@@ -52,10 +50,6 @@ def _extract_setters(
         setters.append("`description` = %(description)s")
         args["description"] = data["description"]
 
-    if data.get("users"):
-        setters.append("`users` = %(users)s")
-        args["users"] = data["users"]
-
 
 def _extract_wheres(  # pylint: disable=too-many-branches, too-many-statements
     _,
@@ -71,10 +65,6 @@ def _extract_wheres(  # pylint: disable=too-many-branches, too-many-statements
     if terms.get("descriptions"):
         wheres.append("`description` IN %(descriptions)s")
         args["descriptions"] = terms["descriptions"]
-
-    if terms.get("users"):
-        wheres.append("`users` IN %(users)s")
-        args["users"] = terms["users"]
 
 
 async def add(
@@ -110,7 +100,6 @@ async def create_table(
     CREATE TABLE IF NOT EXISTS `momentum`.`communities` (
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `description` text,
-        `users` varchar(255) NOT NULL,
         PRIMARY KEY (`id`)
     );
     """
@@ -156,9 +145,7 @@ async def search(
     query = util.compose_query(base_query, wheres)
 
     await cursor.execute(query, args)
-    print(cursor.mogrify(query, args))
     rows = await cursor.fetchall()
-    print(rows)
     return [row["rid"] for row in rows]
 
 
