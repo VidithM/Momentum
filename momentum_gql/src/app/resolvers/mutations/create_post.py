@@ -19,19 +19,20 @@ async def _add_post(
     data: Dict[str, Any],
 ) -> int:
     """Create a post."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            rid, _ = await sql_post.add(connection, parent, data)
-        except Exception:
-            logger.error("Rolling back update due to exception.")
-            await info.context["db"].rollback()
-            raise
+            try:
+                rid, _ = await sql_post.add(cur, parent, data)
+            except Exception:
+                logger.error("Rolling back update due to exception.")
+                await conn.rollback()
+                raise
 
-        await info.context["db"].commit()
+            await conn.commit()
 
-        return rid
+            return rid
 
 
 @_resolver.field("create_post")
@@ -47,7 +48,7 @@ async def create_post(
         input,
     )
 
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    post = await sql_post.search_by_rids(cur, info, [rid])
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            post = await sql_post.search_by_rids(cur, info, [rid])
     return {"post": post[0]}

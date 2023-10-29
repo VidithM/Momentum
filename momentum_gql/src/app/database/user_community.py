@@ -215,6 +215,7 @@ async def search(
 
     await cursor.execute(query, args)
     rows = await cursor.fetchall()
+    print(rows)
     return [row["rid"] for row in rows]
 
 
@@ -243,4 +244,5 @@ async def update(
     query += "\n" + ",\n".join(setters)
     query += "\nWHERE " + " \nAND ".join(wheres)
     print(cursor.mogrify(query))
+    print(args)
     await cursor.execute(query, args)

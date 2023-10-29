@@ -12,24 +12,25 @@ logger = logging.getLogger(__name__)
 
 _resolver = MutationType()
 
+
 async def _update_comment(
     _: Any,
     info: GraphQLResolveInfo,
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a comment."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            await sql_comment.update(connection, info, data)
-        except Exception:
-            logger.error("Rolling back update due to exception.")
-            await info.context["db"].rollback()
-            raise
+            try:
+                await sql_comment.update(cur, info, data)
+            except Exception:
+                logger.error("Rolling back update due to exception.")
+                await conn.rollback()
+                raise
 
-
-        await info.context["db"].commit()
+            await conn.commit()
     return data["rid"]
 
 
@@ -50,8 +51,7 @@ async def update_comment(
         return {
             "error": str(err),
         }
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    comment = await sql_comment.search_by_rids(cur, info, [rid])
-    print(comment)
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            comment = await sql_comment.search_by_rids(cur, info, [rid])
     return {"comment": comment[0]}

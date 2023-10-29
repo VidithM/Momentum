@@ -20,27 +20,28 @@ async def _add_user(
     data: Dict[str, Any],
 ) -> int:
     """Create a user."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            rid, _ = await sql_user.add(connection, parent, data)
-        except Exception:
-            logger.error("Rolling back update due to exception.")
-            await info.context["db"].rollback()
-            raise
-        # for community in data["communities"]:
-        #     comm_data = {}
-        #     comm_data["user_id"] = rid
-        #     comm_data["community_id"] = community
-        #     try:
-        #         _, _ = await ucomm.add(connection, parent, comm_data)
-        #     except Exception as exc:
-        #         logger.error("Rolling back update due to exception.")
-        #         logger.error(str(exc))
-        #         await info.context["db"].rollback()
-        #         raise
-        await info.context["db"].commit()
+            try:
+                rid, _ = await sql_user.add(cur, parent, data)
+            except Exception:
+                logger.error("Rolling back update due to exception.")
+                await conn.rollback()
+                raise
+            # for community in data["communities"]:
+            #     comm_data = {}
+            #     comm_data["user_id"] = rid
+            #     comm_data["community_id"] = community
+            #     try:
+            #         _, _ = await ucomm.add(connection, parent, comm_data)
+            #     except Exception as exc:
+            #         logger.error("Rolling back update due to exception.")
+            #         logger.error(str(exc))
+            #         await info.context["db"].rollback()
+            #         raise
+            await conn.commit()
 
         return rid
 
@@ -64,7 +65,7 @@ async def create_user(
     #     return {
     #         "error": str(err),
     #     }
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    user = await sql_user.search_by_rids(cur, info, [rid])
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            user = await sql_user.search_by_rids(cur, info, [rid])
     return {"user": user[0]}

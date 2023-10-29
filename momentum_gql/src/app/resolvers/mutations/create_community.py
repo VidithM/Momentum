@@ -20,29 +20,30 @@ async def _add_community(
     data: Dict[str, Any],
 ) -> int:
     """Create a community."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            rid, _ = await sql_community.add(connection, parent, data)
-        except Exception as exc:
-            logger.error("Rolling back update due to exception.")
-            logger.error(str(exc))
-            await info.context["db"].rollback()
-            raise
-        # for user in data["users"]:
-        #     comm_data = {}
-        #     comm_data["user_id"] = user
-        #     comm_data["community_id"] = rid
-        #     try:
-        #         _, _ = await ucomm.add(connection, parent, comm_data)
-        #     except Exception as exc:
-        #         logger.error("Rolling back update due to exception.")
-        #         logger.error(str(exc))
-        #         await info.context["db"].rollback()
-        #         raise
+            try:
+                rid, _ = await sql_community.add(cur, parent, data)
+            except Exception as exc:
+                logger.error("Rolling back update due to exception.")
+                logger.error(str(exc))
+                await conn.rollback()
+                raise
+            # for user in data["users"]:
+            #     comm_data = {}
+            #     comm_data["user_id"] = user
+            #     comm_data["community_id"] = rid
+            #     try:
+            #         _, _ = await ucomm.add(connection, parent, comm_data)
+            #     except Exception as exc:
+            #         logger.error("Rolling back update due to exception.")
+            #         logger.error(str(exc))
+            #         await info.context["db"].rollback()
+            #         raise
 
-        await info.context["db"].commit()
+            await conn.commit()
 
         return rid
 
@@ -65,8 +66,7 @@ async def create_community(
             "error": str(err),
         }
 
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    community = await sql_community.search_by_rids(cur, info, [rid])
-    print(community)
-    cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            community = await sql_community.search_by_rids(cur, info, [rid])
     return {"community": community[0]}

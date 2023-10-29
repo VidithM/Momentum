@@ -13,24 +13,25 @@ logger = logging.getLogger(__name__)
 
 _resolver = MutationType()
 
+
 async def _update_post(
     _: Any,
     info: GraphQLResolveInfo,
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a post."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            await sql_post.update(connection, info, data)
-        except Exception:
-            logger.error("Rolling back update due to exception.")
-            await info.context["db"].rollback()
-            raise
+            try:
+                await sql_post.update(cur, info, data)
+            except Exception:
+                logger.error("Rolling back update due to exception.")
+                await conn.rollback()
+                raise
 
-
-        await info.context["db"].commit()
+            await conn.commit()
     return data["rid"]
 
 
@@ -52,7 +53,7 @@ async def update_post(
             "error": str(err),
         }
 
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    post = await sql_post.search_by_rids(cur, info, [rid])
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            post = await sql_post.search_by_rids(cur, info, [rid])
     return {"post": post[0]}

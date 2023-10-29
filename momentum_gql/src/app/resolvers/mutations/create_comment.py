@@ -19,17 +19,18 @@ async def _add_comment(
     data: Dict[str, Any],
 ) -> int:
     """Create a comment."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        try:
-            rid, _ = await sql_comment.add(connection, parent, data)
-        except Exception:
-            logger.error("Rolling back update due to exception.")
-            await info.context["db"].rollback()
-            raise
+            try:
+                rid, _ = await sql_comment.add(cur, parent, data)
+            except Exception:
+                logger.error("Rolling back update due to exception.")
+                await conn.rollback()
+                raise
 
-        await info.context["db"].commit()
+            await conn.commit()
 
         return rid
 
@@ -46,7 +47,7 @@ async def create_comment(
         info,
         input,
     )
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    comment = await sql_comment.search_by_rids(cur, info, [rid])
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            comment = await sql_comment.search_by_rids(cur, info, [rid])
     return {"comment": comment[0]}

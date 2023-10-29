@@ -22,17 +22,18 @@ async def resolve_users(
     """Get users information."""
     terms = {"community_ids": [parent["rid"]]}
     print(terms)
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    rids = await user_community.search_by_community_ids(
-        cur,
-        info,
-        [parent["rid"]],
-    )
-    print(rids)
-    if rids:
-        return await users.search_by_rids(cur, info, rids)
-    else:
-        return None
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            rids = await user_community.search_by_community_ids(
+                cur,
+                info,
+                [parent["rid"]],
+            )
+            print(rids)
+            if rids:
+                return await users.search_by_rids(cur, info, rids)
+            else:
+                return None
 
 
 @_resolver.field("posts")
@@ -43,10 +44,11 @@ async def resolve_posts(
     """Get posts information."""
     print(parent)
     terms = {"communities": [parent["rid"]]}
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    rids = await posts.search(
-        cur,
-        info,
-        terms,
-    )
-    return await posts.search_by_rids(cur, info, rids)
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            rids = await posts.search(
+                cur,
+                info,
+                terms,
+            )
+            return await posts.search_by_rids(cur, info, rids)

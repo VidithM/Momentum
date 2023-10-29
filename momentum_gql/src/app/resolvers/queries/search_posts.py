@@ -19,8 +19,9 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search posts."""
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    return await sql_posts.search(cur, info, terms)
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            return await sql_posts.search(cur, info, terms)
 
 
 @_resolver.field("search_posts")
@@ -39,13 +40,11 @@ async def search_posts(
         terms,
     )
     print(rids)
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    posts = await sql_posts.search_by_rids(cur, info, rids)
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            posts = await sql_posts.search_by_rids(cur, info, rids)
 
     return {
-        "posts": posts
-        if rids
-        else None,
+        "posts": posts if rids else None,
         "error": error,
     }

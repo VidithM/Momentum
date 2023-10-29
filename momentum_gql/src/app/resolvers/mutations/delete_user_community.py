@@ -20,31 +20,32 @@ async def _delete_user_community(
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a user."""
-    async with info.context["db"].cursor(aiomysql.DictCursor) as connection:
-        # await connection.begin()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            # await connection.begin()
 
-        for community in data["communities"]:
-            comm_data = {}
-            comm_data_s = {}
-            comm_data["user_id"] = 0
-            comm_data_s["user_ids"] = [data["rid"]]
-            comm_data["community_id"] = 0
-            comm_data_s["community_ids"] = [community]
+            for community in data["communities"]:
+                comm_data = {}
+                comm_data_s = {}
+                comm_data["user_id"] = 0
+                comm_data_s["user_ids"] = [data["rid"]]
+                comm_data["community_id"] = 0
+                comm_data_s["community_ids"] = [community]
 
-            rid = await ucomm.search(connection, info, comm_data_s)
-            comm_data["rid"] = rid
-            print(comm_data)
-            if rid is not None:
-                try:
-                    print("Deleting")
-                    await ucomm.update(connection, info, comm_data)
-                except Exception as exc:
-                    logger.error("Rolling back update due to exception.")
-                    logger.error(str(exc))
-                    await info.context["db"].rollback()
-                    raise
+                rid = await ucomm.search(cur, info, comm_data_s)
+                comm_data["rid"] = rid
+                print(comm_data)
+                if rid != []:
+                    try:
+                        print("Deleting")
+                        await ucomm.update(cur, info, comm_data)
+                    except Exception as exc:
+                        logger.error("Rolling back update due to exception.")
+                        logger.error(str(exc))
+                        await conn.rollback()
+                        raise
 
-        await info.context["db"].commit()
+            await conn.commit()
     return data["rid"]
 
 
@@ -61,7 +62,7 @@ async def delete_user_community(
         input,
     )
 
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    user = await sql_user.search_by_rids(cur, info, [rid])
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            user = await sql_user.search_by_rids(cur, info, [rid])
     return {"user": user[0]}

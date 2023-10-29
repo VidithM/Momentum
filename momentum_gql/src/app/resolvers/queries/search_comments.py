@@ -19,8 +19,9 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search comments."""
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    return await sql_comments.search(cur, info, terms)
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            return await sql_comments.search(cur, info, terms)
 
 
 @_resolver.field("search_comments")
@@ -39,13 +40,11 @@ async def search_comments(
         terms,
     )
 
-    cur = await info.context["db"].cursor(aiomysql.DictCursor)
-    comments = await sql_comments.search_by_rids(cur, info, rids)
-    await cur.close()
+    async with info.context["db"].acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            comments = await sql_comments.search_by_rids(cur, info, rids)
 
     return {
-        "comments": comments
-        if rids
-        else None,
+        "comments": comments if rids else None,
         "error": error,
     }

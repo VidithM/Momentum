@@ -3,6 +3,7 @@ import asyncio
 import logging
 import logging.config
 import signal
+from functools import partial
 
 import aiomysql
 from ariadne.graphql import GraphQLSchema
@@ -16,6 +17,7 @@ from dotenv import load_dotenv
 
 from .resources.schema_utils import make_resolver_list
 
+DB_POOL = None
 
 TIME_TO_QUIT = False
 
@@ -24,30 +26,37 @@ TIME_TO_QUIT = False
 
 logger = logging.getLogger(__name__)
 
+from .database import comments, communities, posts, users, user_community
+
+
+async def on_startup():
+    """Do startup stuff."""
+    global DB_POOL
+    DB_POOL = await aiomysql.create_pool(
+        host="127.0.0.1",
+        port=3306,
+        user="root",
+        password="rootpassword",
+        db="mysql",
+    )
+    async with DB_POOL.acquire() as conn:
+        async with conn.cursor() as cur:
+            # Creates the tables if they don't already exist
+            await comments.create_table(cur)
+            await communities.create_table(cur)
+            await posts.create_table(cur)
+            await users.create_table(cur)
+            await user_community.create_table(cur)
+
 
 async def update_context(_) -> ContextValue:
     """Add extra information to the context."""
-    loop = asyncio.get_running_loop()
+    if not DB_POOL:
+        await on_startup()
+
     res = {
-        "db": await aiomysql.connect(
-            host="127.0.0.1",
-            port=3306,
-            user="root",
-            password="rootpassword",
-            db="mysql",
-            loop=loop,
-        ),
+        "db": DB_POOL,
     }
-    cur = await res.get("db").cursor(aiomysql.DictCursor)
-
-    from .database import comments, communities, posts, users, user_community
-
-    # Creates the tables if they don't already exist
-    await comments.create_table(cur)
-    await communities.create_table(cur)
-    await posts.create_table(cur)
-    await users.create_table(cur)
-    await user_community.create_table(cur)
 
     return res
 

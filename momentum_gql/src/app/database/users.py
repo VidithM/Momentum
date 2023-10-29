@@ -148,7 +148,10 @@ async def search_by_rids(
     terms = {
         "rids": rids,
     }
-    return await _query(cursor, _, terms)
+    print(terms)
+    result = await _query(cursor, _, terms)
+    print(result)
+    return result
 
 
 async def search(
