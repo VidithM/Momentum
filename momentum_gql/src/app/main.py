@@ -51,8 +51,8 @@ async def on_startup():
 
 async def update_context(_) -> ContextValue:
     """Add extra information to the context."""
-    if not DB_POOL:
-        await on_startup()
+    # if not DB_POOL:
+    await on_startup()
 
     res = {
         "db": DB_POOL,
