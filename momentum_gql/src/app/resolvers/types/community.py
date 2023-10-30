@@ -30,7 +30,7 @@ async def resolve_users(
                 [parent["rid"]],
             )
             print(rids)
-            if rids:
+            if rids != []:
                 return await users.search_by_rids(cur, info, rids)
             else:
                 return None
@@ -51,4 +51,7 @@ async def resolve_posts(
                 info,
                 terms,
             )
-            return await posts.search_by_rids(cur, info, rids)
+            if rids != []:
+                return await posts.search_by_rids(cur, info, rids)
+            else:
+                return None

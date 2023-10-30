@@ -22,7 +22,7 @@ async def resolve_post(
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
             post = await posts.search_by_rids(cur, info, [parent["post"]])
-    return post[0]
+    return post[0] or None
 
 
 @_resolver.field("user")
@@ -33,7 +33,7 @@ async def resolve_user(
     """Get user information."""
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            return (await users.search_by_rids(cur, info, [parent["user"]]))[0]
+            return (await users.search_by_rids(cur, info, [parent["user"]]))[0] or None
 
 
 @_resolver.field("comments")
@@ -50,7 +50,9 @@ async def resolve_comments(
                 info,
                 terms,
             )
-            return await comments.search_by_rids(cur, info, rids)
+            if rids != 0:
+                return await comments.search_by_rids(cur, info, rids)
+            return None
 
 
 @_resolver.field("parent")
@@ -61,4 +63,6 @@ async def resolve_comment(
     """Get parent information."""
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            return (await comments.search_by_rids(cur, info, [parent["parent"]]))[0]
+            return (await comments.search_by_rids(cur, info, [parent["parent"]]))[
+                0
+            ] or None

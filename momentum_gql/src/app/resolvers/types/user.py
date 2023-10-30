@@ -46,7 +46,9 @@ async def resolve_posts(
                 info,
                 terms,
             )
-            return await posts.search_by_rids(cur, info, rids)
+            if rids != []:
+                return await posts.search_by_rids(cur, info, rids)
+            return None
 
 
 @_resolver.field("comments")
@@ -63,4 +65,7 @@ async def resolve_comments(
                 info,
                 terms,
             )
-            return await comments.search_by_rids(cur, info, rids)
+            if rids != []:
+                return await comments.search_by_rids(cur, info, rids)
+            else:
+                return None

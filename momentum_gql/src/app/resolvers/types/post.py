@@ -23,7 +23,7 @@ async def resolve_community(
         async with conn.cursor(aiomysql.DictCursor) as cur:
             return (await communities.search_by_rids(cur, info, [parent["community"]]))[
                 0
-            ]
+            ] or None
 
 
 @_resolver.field("user")
@@ -34,7 +34,7 @@ async def resolve_user(
     """Get user information."""
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            return (await users.search_by_rids(cur, info, [parent["user"]]))[0]
+            return (await users.search_by_rids(cur, info, [parent["user"]]))[0] or None
 
 
 @_resolver.field("comments")
@@ -51,4 +51,7 @@ async def resolve_comments(
                 info,
                 terms,
             )
-            return await comments.search_by_rids(cur, info, rids)
+            if rids != 0:
+                return await comments.search_by_rids(cur, info, rids)
+            else:
+                return None
