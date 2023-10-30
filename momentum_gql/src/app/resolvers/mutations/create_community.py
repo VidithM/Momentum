@@ -55,6 +55,7 @@ async def create_community(
     input: Dict[str, Any],  # pylint: disable=redefined-builtin
 ) -> Dict[str, Any]:
     """Resolve add community."""
+    
     try:
         rid = await _add_community(
             parent,
@@ -67,6 +68,8 @@ async def create_community(
         }
 
     async with info.context["db"].acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            community = await sql_community.search_by_rids(cur, info, [rid])
+            async with conn.cursor(aiomysql.DictCursor) as cur:
+                print(rid)
+                community = await sql_community.search_by_rids(cur, info, [rid])
+                print(community)
     return {"community": community[0]}

@@ -99,10 +99,16 @@ export const get_user_with_rid = async (rid) => {
                     rid
                     username
                     name
+                    posts {
+                        rid
+                    }
                     communities {
                         rid
                         description
                         users {
+                            rid
+                        }
+                        posts {
                             rid
                         }
                     }
@@ -118,13 +124,74 @@ export const get_user_with_rid = async (rid) => {
     return user[0];
 }
 
-export const create_community = async (description, owner_rid) => {
+export const add_user_to_community = async (user_rid, community_rid) => {
     let query_body = `
-        mutation ($description: String!, $owner_rid: [Int!]!) {
+        mutation ($user_rid: Int!, $new_communities: [Int!]) {
+            update_user (
+                input: {
+                    rid: $user_rid,
+                    communities: $new_communities
+                }
+            )
+            {
+                error {
+                    description
+                }
+                user {
+                    rid
+                    username
+                    communities {
+                        rid
+                    }
+                }
+            }
+        }
+    `
+    await run_gql(query_body, {"user_rid" : user_rid, "new_communities" : [community_rid]});
+}
+
+export const get_community_with_rid = async (rid) => {
+    let query_body = `
+        query ($rids: [Int!]) {
+            search_communities (
+                terms: {
+                    rids: $rids
+                }
+            )
+            {
+                error {
+                    description
+                }
+                communities {
+                    rid
+                    description
+                    posts {
+                        rid
+                        user {
+                            rid
+                            username
+                            name
+                        }
+                        content
+                        timestamp
+                    }
+                    users {
+                        rid
+                    }
+                }
+            }
+        }
+    `
+    let res = await run_gql(query_body, {"rids" : [rid]});
+    return res.data.search_communities.communities[0];
+}
+
+export const create_community = async (name, description, owner_rid) => {
+    let query_body = `
+        mutation ($description: String!) {
             create_community (
                 input: {
-                    description: $description,
-                    users: $owner_rid
+                    description: $description
                 }
             )
             {
@@ -137,6 +204,28 @@ export const create_community = async (description, owner_rid) => {
             }
         }
     `
-    let res = await run_gql(query_body, {"description" : description, "owner_rid" : [owner_rid]});
+    let res = await run_gql(query_body, {"description" : name.concat("%").concat(description)});
+    await add_user_to_community(owner_rid, res.data.create_community.community.rid);
     console.log(res);
+}
+
+export const create_post = async (user_rid, content, timestamp, community) => {
+    let query_body = `
+        mutation ($user: Int!, $content: String!, $timestamp: Datetime!, $community: Int!) {
+            create_post (
+                input: {
+                    user: $user,
+                    content: $content,
+                    timestamp: $timestamp,
+                    community: $community
+                }
+            )
+            {
+                error {
+                    description
+                }
+            }
+        }
+    `
+    await run_gql(query_body, {"user": user_rid, "content": content, "timestamp": timestamp, "community": community});
 }

@@ -18,7 +18,7 @@ async def _query(
 ) -> List[Dict[str, Any]]:
     """Query database for community info."""
     logger.debug("* querying %s.%s %s", util.SCHEMA, TABLE, terms)
-
+    print('passed in _query')
     base_query = f"""
         SELECT
             `main`.`id` AS `rid`,
