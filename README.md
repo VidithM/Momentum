@@ -1,27 +1,118 @@
 # Momentum Prototype
 
-## Description with UI sketch of main use cases
+## Description of all use cases with UI sketch
 
 ### Description
 
 **Overview of functionality**
 We intend to create a Reddit-Twitter-like social media app. The application will support the creation of user accounts with customizable usernames and profile images. The main content of the app will be centered around community-generated posts. Users will be able to link/join their accounts to communities they are interested in. Community posts will be visible to all community members and may contain text as well as image content. Community members will also be able to leave comments on posts. Communities are identified by a title/name and will have a description and optional community image.
-**Application Flow**
+**Use Cases**
+**1: Login**
+* Actors: All users must login to their accounts to use the application
+* Goals: The actors login in order to identify and authenticate themselves in the system
+* Preconditions: The login is performed from the landing page
+* Summary: The user enters their email and password on the landing page and submits it to the system
+* Related use cases: See Registration
+* Steps: 1. Enter username 2. Enter password 3. Submit form data
+* Postconditions: If successful, the actor will be redirected to their profile page. Otherwise, the page will alert them that the login failed
 
-* The landing page of the app will allow users to either create an account or log into an existing account.
-* Once signed in, users will be directed to a profile page where they can view all of the communities they are in, as well as options to join new communities or create a community. The profile page will also contain data on recent posts that the user has made.
-* Each community will have page that will have general community info at the top (name, description, image, member count, number of posts), followed by the community posts. There will be an option on the right margin of the page for users to create a new post in the community.
-* Each individual post will have a main container to display contents of the post (author, author profile image, title, body contents), as well as a hidden dropdown container that will display comments associated with that post. Each comment will be a line that contains the username of the commenter and the comment body (text only). Nested comments will not be supported.
-* There will be a common navbar at the top for all pages except for the landing page, which will allow users to logout of their account, go back to the profile page, or go to a separate settings page.
-* The settings page will allow users to modify their username and profile image.
+**2: Reigstration**
+* Actors: All users must register accounts to use the application
+* Goals: The actors register in order to create identities for them to use on the application
+* Preconditions: The registration is performed from the registration page
+* Summary: The user enters their email, name, desired username, and password on the registration page and submits it to the system
+* Related use cases: See Login
+* Steps: 1. From landing page, go to registration page 2. Enter required data 3. Submit form data
+* Postconditions: If successful, the actor will be redirected to their profile page. Otherwise, the page will alert them that the registration failed
+
+**3: Logout**
+* Actors: All users will logout in order to close their session on the client
+* Goals: The actors logout in order to close their session and prevent misuse of their accounts
+* Preconditions: The client maintains the actor's login information. The logout may be performed from any authenticated page (excludes landing and registration pages)
+* Summary: The actor presses the logout button in the toolbar
+* Related use cases: See Login, Registration
+* Steps: 1. On any authenticated page, press logout button in the toolbar
+* Postconditions: The client-side tokens will be cleared from the user's system and the actor is redirected to the landing page
+
+**4: Create Community**
+* Actors: Users who wish to create a community that does not currently exist
+* Goals: To create a community for posts/discussion surrounding the topic of the community
+* Preconditions: Communities are created from the actor's profile page
+* Summary: The actor enters the name and description of the new community on the profile page
+* Related use cases: See Join Community
+* Steps: 1. On the profile page, enter the community name 2. Enter the community description 3. Create the community
+* Postconditions: The new community will be displayed on the actor's list of communities on the profile page
+
+**5: Join Community**
+* Actors: Users who wish to join a community that interests them
+* Goals: To join a community for posts/discussion surrounding the topic of the community
+* Preconditions: Communities are joined from the actor's profile page
+* Summary: The actor enters the community code of the community they wish to join on their profile page
+* Related use cases: See Create Community
+* Steps: 1. On the profile page, enter the community code 2. Submit and join the community
+* Postconditions: If successful, the new community will be displayed on the actor's list of communities on the profile page. Otherwise, the page will alert them that the community joining failed
+
+**6: Create Post**
+* Actors: Users who wish to contribute to a community with a post
+* Goals: To post about something relevant to the topic of the community
+* Preconditions: Posts may be submitted from the page of a specific community
+* Summary: The actor enters the content of their post on the respective community page and submits it
+* Related use cases: See Comment on Post
+* Steps: 1. On the profile page, go to the desired community 2. In the community page, enter the post data 3. Submit post data
+* Postconditions: The new post will be displayed in the list of posts of the community. Other actors may leave comments on the post.
+
+**7: Comment on Post**
+* Actors: Users who wish to comment on an existing post 
+* Goals: To post about something relevant to the topic of the community
+* Preconditions: Comments are made from the community page of a specific community
+* Summary: The actor types their comment in a field adjacent to the post they wish to comment on
+* Related use cases: See Create Post
+* Steps: 1. On the profile page, go to the desired community 2. In the community page, find the desired post and write the comment 3. Submit the comment
+* Postconditions: The new comment will be displayed underneath the post for which the comment was made
+
+**8: Go to Settings**
+* Actors: Users who wish to change some characteristics of their profile 
+* Goals: To change some aspects of the actor's profile (profile image, username, password)
+* Preconditions: The settings page can be entered from any authenticated page
+* Summary: The actor presses the settings button in the toolbar
+* Related use cases: See Update User Image, Update Username, Update Password
+* Steps: 1. On any authenticated page, press settings button in the toolbar
+* Postconditions: The actor is redirected to the settings page for their account
+
+**9: Update User Image**
+* Actors: Users who wish to change their profile image, which is displayed on posts and comments
+* Goals: To change the appearance of the actor to other users
+* Preconditions: Any update of user profile data must be done from the settings page
+* Summary: The actor selects the option to upload a new profile image and selects a file from their device
+* Related use cases: See Update Username, Update Password, Go to Settings
+* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, select the option for a new profile image 3. Find a new image on the actor's filesystem 4. Upload the desired image
+* Postconditions: The image will now be applied on all posts and comments the actor makes
+
+**10: Update Username**
+* Actors: Users who wish to change their username, which is displayed on posts and comments
+* Goals: To change the username of the actor
+* Preconditions: Any update of user profile data must be done from the settings page
+* Summary: The actor types their new username and confirms it
+* Related use cases: See Update User Image, Update Password, Go to Settings
+* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, type a new username 3. Submit the username
+* Postconditions: The username will now be applied on all posts and comments the actor makes. In addition, it will be seen on the actor's toolbar.
+
+**11: Update Password**
+* Actors: Users who wish to change their password
+* Goals: To change the password to be easier to remember, for example.
+* Preconditions: Any update of user profile data must be done from the settings page
+* Summary: The actor types their new password and confirms it
+* Related use cases: See Update User Image, Update Password, Go to Settings
+* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, type a new password 3. Submit the password
+* Postconditions: The new password will now be required for the user to login.
 
 **Current Status**
-The prototype is currently connected with the GraphQL/MariaDB backend and allows for creation of new accounts as well as logging in/logging out of existing accounts. The general layout of the profile page as well as the community page has been established. No other features/pages are fully functional as of yet.
+The current iteration is currently connected with the GraphQL/MariaDB backend and allows for creation of new accounts, logging in/logging out of existing accounts, the creation of new communities, and posting in communities. The general layout of the profile page as well as the community page has been established. No other features/pages are fully functional as of yet.
 
 ### UI Sketch
-
-![UISketch](uisketch.jpg)
-
+The respective use case numbers are labelled on the transition arrows between pages
+![UISketch](uisketch1.jpg)
+![UISketch](uisketch2.jpg)
 ## Database design
 
 ### Description of data entities and relationships
@@ -215,6 +306,8 @@ This allows for a simpler table, as relationships don't need to be managed direc
 The database is the third part of the architecture, and is a basic single schema four table MySQL database, running in a MariaDB Docker container.
 As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.
 
+The communication between the client and server is done using JSON payloads over HTTP.
+
 ## Prototype
 
 ### Running the Momentum application
@@ -226,6 +319,8 @@ GUI application: `momentum_frontend`
 
 Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and will need to be added via the sql commands.
 
+**IMPORTANT NOTE**: You might encounter some adverse database behavior. Some of our database properties have changed since the last iteration. Please delete your existing Docker container if any issues occur.
+
 ### Video recordings of user acceptance tests
 
-[YouTube Link](https://www.youtube.com/watch?v=3KVG15_2eeI)
+[YouTube Link](https://youtu.be/WZka9VaFppI)
