@@ -18,6 +18,7 @@ def query_community(collection, data):
     for doc in x:
         print(doc)
         doclist.append(doc)
+        doc["rid"] = doc.pop("_id")
     return doclist
 
 
