@@ -10,7 +10,6 @@ from ..resolvers.mutations import (
     update_community,
 )
 from ..resolvers.mutations import create_post, update_post, create_user, update_user
-from ..resolvers.mutations import delete_community_user, delete_user_community
 
 
 from ..resolvers.queries import (
@@ -48,13 +47,6 @@ def make_resolver_list():
 
     mutation.set_field("create_user", create_user.create_user)
     mutation.set_field("update_user", update_user.update_user)
-
-    mutation.set_field(
-        "delete_community_user", delete_community_user.delete_community_user
-    )
-    mutation.set_field(
-        "delete_user_community", delete_user_community.delete_user_community
-    )
 
     query.set_field("search_users", search_users.search_users)
     query.set_field("search_posts", search_posts.search_posts)
