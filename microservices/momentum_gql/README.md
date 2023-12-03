@@ -219,7 +219,3 @@ mutation{
   }
 }
 ```
-
-### Bugs
-
-Sometimes the gql calls fail if you go too far down the nested dependency tree.  Probably due to me not closing cursors.  I'll fix it sometime.

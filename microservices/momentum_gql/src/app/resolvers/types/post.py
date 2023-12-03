@@ -5,8 +5,9 @@ from typing import Any, Dict, Optional
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
+import aiohttp
 
-from ...database import communities, users, comments
+from ...database import comments
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +19,12 @@ async def resolve_community(
     parent: Dict[str, Any],
     info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
-    """Get community information."""
-    async with info.context["db"].acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            return (await communities.search_by_rids(cur, info, [parent["community"]]))[
-                0
-            ] or None
+    query = {"rid": [parent["community"]]}
+    async with aiohttp.ClientSession() as session:
+        url = "http://localhost:8005/getcommunity"
+        response = await session.get(url, json=query)
+        data = await response.json(content_type="text/json")
+    return {"community": data[0]} or None
 
 
 @_resolver.field("user")

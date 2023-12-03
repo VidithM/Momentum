@@ -3,24 +3,19 @@ requires = ["setuptools >= 68.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "momentum_gql"
+name = "mdb_interface"
 version = "0.0.0"
-description = "GQL server for momentum app"
+description = "Restful interface for mongodb server"
 readme = "README.md"
 requires-python = ">=3.10"
 
-dependencies = [
-    "ariadne == 0.20.1", # 0.20.1
-    "python-dotenv",
-    "aiomysql",
-    "uvicorn == 0.23.2",
-]
+dependencies = ["pymongo", "python-dotenv"]
 
 [project.urls]
 homepage = "https://github.com/VidithM/Momentum"
 
 [tool.setuptools.package-data]
-"*" = ["*.gql", "*.graphql", "*.graphqls", "*.yaml", "*.yml"]
+"*" = []
 
 [tool.bandit.assert_used]
 skips = ["*/test_*.py"]
