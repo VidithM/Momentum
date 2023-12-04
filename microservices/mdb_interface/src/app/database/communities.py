@@ -13,6 +13,12 @@ def query_community(collection, data):
     if data.get("rid"):
         data["_id"] = ObjectId(data["rid"])
         del data["rid"]
+    if data.get("rids"):
+        obids = []
+        for item in data["rids"]["$in"]:
+            obids.append(ObjectId(item))
+        data["_id"] = {"$in": obids}
+        del data["rids"]
     x = collection.find(data)
     doclist = []
     for doc in x:

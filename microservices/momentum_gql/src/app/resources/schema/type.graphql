@@ -16,7 +16,7 @@ type ErrorResponse {
 }
 
 type Community{
-    rid: Int!
+    rid: String!
     description: String!
     users: [User]
     posts: [Post]

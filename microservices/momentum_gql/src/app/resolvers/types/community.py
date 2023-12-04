@@ -5,8 +5,9 @@ from typing import Any, Dict, Optional, List
 from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
+import aiohttp
 
-from ...database import posts, users, user_community
+from ...database import posts
 
 
 logger = logging.getLogger(__name__)
@@ -20,20 +21,12 @@ async def resolve_users(
     info: GraphQLResolveInfo,
 ) -> Optional[List[Dict[str, Any]]]:
     """Get users information."""
-    terms = {"community_ids": [parent["rid"]]}
-    print(terms)
-    async with info.context["db"].acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            rids = await user_community.search_by_community_ids(
-                cur,
-                info,
-                [parent["rid"]],
-            )
-            print(rids)
-            if rids != []:
-                return await users.search_by_rids(cur, info, rids)
-            else:
-                return None
+    query = {"rids": parent["users"]}
+    async with aiohttp.ClientSession() as session:
+        url = "http://localhost:8080/get"
+        response = await session.get(url, json=query)
+        users = await response.json(content_type="text/json")
+    return {"users": users}
 
 
 @_resolver.field("posts")

@@ -4,9 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ariadne import QueryType
 from graphql import GraphQLResolveInfo
-import aiomysql
-
-from ...database import users as sql_users
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -15,13 +13,15 @@ _resolver = QueryType()
 
 async def _search(
     _: Any,
-    info: GraphQLResolveInfo,
+    _info: GraphQLResolveInfo,
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search users."""
-    async with info.context["db"].acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            return await sql_users.search(cur, info, terms)
+    async with aiohttp.ClientSession() as session:
+        url = "http://localhost:8080/search"
+        response = await session.get(url, json=terms)
+        data = await response.json(content_type="text/json")
+    return data
 
 
 @_resolver.field("search_users")
@@ -31,20 +31,15 @@ async def search_users(
     terms: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Resolve search users."""
-    rids: Optional[List[int]] = None
     error: Optional[Dict[str, str]] = None
 
-    rids = await _search(
+    users = await _search(
         parent,
         info,
         terms,
     )
 
-    async with info.context["db"].acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            users = await sql_users.search_by_rids(cur, info, rids)
-
     return {
-        "users": users if rids else None,
+        "users": users if users else None,
         "error": error,
     }

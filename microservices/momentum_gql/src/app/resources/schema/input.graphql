@@ -23,7 +23,7 @@ input SearchCommentsInput {
 }
 
 input SearchCommunitiesInput {
-    rids: [Int!]
+    rids: [String!]
     descriptions: [String!]
     users: [Int!]
 }
@@ -52,7 +52,7 @@ input CreatePostInput {
     user: Int!
     content: String!
     timestamp: Datetime!
-    community: Int!
+    community: String!
     file: String
 }
 
@@ -90,7 +90,7 @@ input UpdateCommentInput {
 }
 
 input UpdateCommunityInput {
-    rid: Int!
+    rid: String!
     description: String
     users: [Int!]
 }

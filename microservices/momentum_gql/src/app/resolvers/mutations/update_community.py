@@ -20,10 +20,11 @@ async def _update_community(
 ) -> List[Any]:
     """Update a community."""
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/updatecommunity"
+        url = "http://localhost:8011/updatecommunity"
         response = await session.post(url, json=data)
         data = await response.json(content_type="text/json")
-    return data["rid"]
+        print(data)
+    return data["data"]
 
 
 @_resolver.field("update_community")
@@ -40,7 +41,7 @@ async def update_community(
     )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
+        url = "http://localhost:8011/getcommunity"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"community": data[0]}
+        data = await response.json(content_type="application/json")
+    return {"community": data["data"][0]}

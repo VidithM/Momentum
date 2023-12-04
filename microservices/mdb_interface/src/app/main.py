@@ -4,8 +4,9 @@ import http.server
 import socketserver
 from typing import Tuple
 from http import HTTPStatus
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from pymongo import MongoClient
+import os
 
 from .database.communities import (
     update_community,
@@ -14,7 +15,7 @@ from .database.communities import (
     query_community,
 )
 
-config = dotenv_values(".env")
+# config = dotenv_values(".env")
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -38,8 +39,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 input_data = json.loads(input_json)
             else:
                 input_data = None
-            mongodb_client = MongoClient(config["ME_CONFIG_MONGODB_URL"])
-            database = mongodb_client[config["DB_NAME"]]
+            mongodb_client = MongoClient(os.environ.get("ME_CONFIG_MONGODB_URL"))
+            database = mongodb_client[os.environ.get("DB_NAME")]
             mycol = database["customers"]
             community = query_community(mycol, input_data)
 
@@ -81,8 +82,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 input_data = None
 
-            mongodb_client = MongoClient(config["ME_CONFIG_MONGODB_URL"])
-            database = mongodb_client[config["DB_NAME"]]
+            mongodb_client = MongoClient(os.environ.get("ME_CONFIG_MONGODB_URL"))
+            database = mongodb_client[os.environ.get("DB_NAME")]
             mycol = database["customers"]
             rid = create_new_community(mycol, input_data)
 
@@ -104,8 +105,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 input_data = None
 
-            mongodb_client = MongoClient(config["ME_CONFIG_MONGODB_URL"])
-            database = mongodb_client[config["DB_NAME"]]
+            mongodb_client = MongoClient(os.environ.get("ME_CONFIG_MONGODB_URL"))
+            database = mongodb_client[os.environ.get("DB_NAME")]
             mycol = database["customers"]
             rid = update_community(mycol, input_data)
 
@@ -127,8 +128,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 input_data = None
 
-            mongodb_client = MongoClient(config["ME_CONFIG_MONGODB_URL"])
-            database = mongodb_client[config["DB_NAME"]]
+            mongodb_client = MongoClient(os.environ.get("ME_CONFIG_MONGODB_URL"))
+            database = mongodb_client[os.environ.get("DB_NAME")]
             mycol = database["customers"]
             delete_community(mycol, input_data)
 
@@ -153,7 +154,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     "Main"
-    PORT = 8005
+    load_dotenv(verbose=True)
+
+    PORT = 8000
     # Create an object of the above class
     my_server = socketserver.TCPServer(("0.0.0.0", PORT), Handler)
     # Star the server

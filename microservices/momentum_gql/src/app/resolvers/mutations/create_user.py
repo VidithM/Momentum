@@ -42,7 +42,7 @@ async def create_user(
     )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
+        url = "http://localhost:8080/updateuser"
         response = await session.get(url, json=query)
         data = await response.json(content_type="text/json")
     return {"community": data[0]}

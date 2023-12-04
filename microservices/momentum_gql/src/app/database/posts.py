@@ -136,7 +136,7 @@ async def create_table(
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `user` varchar(255) NOT NULL,
         `content` text NOT NULL,
-        `community` int(10) NOT NULL,
+        `community` varchar(255) NOT NULL,
         `timestamp` DATETIME NOT NULL,
         `file` MEDIUMBLOB,
         PRIMARY KEY (`id`)

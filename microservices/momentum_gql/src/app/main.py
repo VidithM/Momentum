@@ -3,7 +3,6 @@ import asyncio
 import logging
 import logging.config
 import signal
-from functools import partial
 
 import aiomysql
 from ariadne.graphql import GraphQLSchema
@@ -26,7 +25,7 @@ TIME_TO_QUIT = False
 
 logger = logging.getLogger(__name__)
 
-from .database import comments, communities, posts, users, user_community
+from .database import comments, posts
 
 
 async def on_startup():
@@ -43,10 +42,7 @@ async def on_startup():
         async with conn.cursor() as cur:
             # Creates the tables if they don't already exist
             await comments.create_table(cur)
-            await communities.create_table(cur)
             await posts.create_table(cur)
-            await users.create_table(cur)
-            await user_community.create_table(cur)
 
 
 async def update_context(_) -> ContextValue:
@@ -84,6 +80,7 @@ def _handle_quit_signals():
 
 def create_app():
     """Main loop"""
+    load_dotenv(verbose=True)
     loop = asyncio.get_event_loop()
     loop.add_signal_handler(signal.SIGINT, _handle_quit_signals)
     loop.add_signal_handler(signal.SIGTERM, _handle_quit_signals)

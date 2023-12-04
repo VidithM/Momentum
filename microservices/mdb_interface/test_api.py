@@ -12,9 +12,10 @@ import asyncio
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        data = {}
-        url = "http://localhost:8005/getcommunity"
+        data = {"description": "nmcclaran"}
+        url = "http://localhost:8011/getcommunity"
         response = await session.get(url, json=data)
+        print(response)
         print(await response.json(content_type="application/json"))
 
 

@@ -17,13 +17,13 @@ async def _add_community(
     parent: Any,
     info: GraphQLResolveInfo,
     data: Dict[str, Any],
-) -> int:
+) -> str:
     """Create a community."""
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/newcommunity"
+        url = "http://localhost:8011/newcommunity"
         response = await session.post(url, json=data)
         data = await response.json(content_type="text/json")
-    return data["rid"]
+    return data["data"]
 
 
 @_resolver.field("create_community")
@@ -34,19 +34,15 @@ async def create_community(
 ) -> Dict[str, Any]:
     """Resolve add community."""
 
-    try:
-        rid = await _add_community(
-            parent,
-            info,
-            input,
-        )
-    except Exception as err:
-        return {
-            "error": str(err),
-        }
+    rid = await _add_community(
+        parent,
+        info,
+        input,
+    )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
+        url = "http://localhost:8011/getcommunity"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"community": data[0]}
+        data = await response.json(content_type="application/json")
+        print(data)
+    return {"community": data["data"][0]}

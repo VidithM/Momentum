@@ -43,13 +43,13 @@ services:
     #   - mongodb
     #   - mdbinterface
 
-  momentum_gql:
-    build:
-      context: ./momentum_gql
-    ports:
-      - "8010:8000"
-    environment:
-      MDB_INTERFACE_URL: http://host.docker.internal:8011
+  # momentum_gql:
+  #   build:
+  #     context: ./momentum_gql
+  #   ports:
+  #     - "8010:8000"
+  #   environment:
+  #     MDB_INTERFACE_URL: http://host.docker.internal:8011
 
   mdb_interface:
     build:

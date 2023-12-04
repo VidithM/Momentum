@@ -18,12 +18,21 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[Any]:
     """Search communities."""
-
+    query = {}
+    if terms.get("descriptions"):
+        query["description"] = {"$in": terms["descriptions"]}
+    if terms.get("rids"):
+        query["rids"] = {"$in": terms["rids"]}
+    if terms.get("users"):
+        if len(terms.get("users")) == 1:
+            query["users"] = terms.get("users")[0]
+        else:
+            query["users"] = {"$eq": terms.get("users")}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
-        response = await session.get(url, json=terms)
-        data = await response.json(content_type="text/json")
-    return data
+        url = "http://localhost:8011/getcommunity"
+        response = await session.get(url, json=query)
+        data = await response.json(content_type="application/json")
+    return data["data"]
 
 
 @_resolver.field("search_communities")
