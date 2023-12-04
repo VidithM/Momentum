@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
-import aiomysql
 import aiohttp
 
 logger = logging.getLogger(__name__)
@@ -14,7 +13,7 @@ _resolver = MutationType()
 
 async def _update_user(
     _: Any,
-    info: GraphQLResolveInfo,
+    _info: GraphQLResolveInfo,
     data: Dict[str, Any],
 ) -> List[Any]:
     """Update a user."""
@@ -45,10 +44,10 @@ async def _update_user(
                     response = await session.post(url, json=data)
                     data = await response.json(content_type="text/json")
         async with aiohttp.ClientSession() as session:
+            data["rid"] = str(data["rid"])
             url = "http://localhost:8080/updateuser"
             response = await session.post(url, json=data)
-            resp = await response.json(content_type="text/json")
-    return resp["rid"]
+    return data["rid"]
 
 
 @_resolver.field("update_user")
@@ -66,7 +65,7 @@ async def update_user(
 
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/get"
+        url = "http://localhost:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"user": data}
+        user = await response.json(content_type="application/json")
+    return {"user": user}

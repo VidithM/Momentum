@@ -33,12 +33,12 @@ async def resolve_user(
     _info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get user information."""
-    query = {"rid": [parent["community"]]}
+    query = {"rid": str(parent["user"])}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/get"
+        url = "http://localhost:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"user": data[0]} or None
+        data = await response.json(content_type="application/json")
+    return data
 
 
 @_resolver.field("comments")

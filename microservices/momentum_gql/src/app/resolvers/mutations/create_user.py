@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from ariadne import MutationType
 from graphql import GraphQLResolveInfo
-import aiomysql
 import aiohttp
 
 logger = logging.getLogger(__name__)
@@ -14,14 +13,15 @@ _resolver = MutationType()
 
 async def _add_user(
     parent: Any,
-    info: GraphQLResolveInfo,
+    _info: GraphQLResolveInfo,
     data: Dict[str, Any],
-) -> int:
+) -> str:
     """Create a user."""
+    data["rid"] = str(data["rid"])
     async with aiohttp.ClientSession() as session:
-        url = "redisurl"
+        url = "http://localhost:8080/updateuser"
         response = await session.post(url, json=data)
-        data = await response.json(content_type="text/json")
+        print(response)
     return data["rid"]
 
 
@@ -42,7 +42,7 @@ async def create_user(
     )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/updateuser"
+        url = "http://localhost:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"community": data[0]}
+        user = await response.json(content_type="application/json")
+    return {"user": user}

@@ -17,9 +17,13 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search users."""
+    if terms.get("rids"):
+        query = {"rids": terms.get("rids")}
+    elif terms.get("emails"):
+        query = {"emails": terms.get("emails")}
     async with aiohttp.ClientSession() as session:
         url = "http://localhost:8080/search"
-        response = await session.get(url, json=terms)
+        response = await session.get(url, json=query)
         data = await response.json(content_type="text/json")
     return data
 

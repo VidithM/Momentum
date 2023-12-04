@@ -22,10 +22,10 @@ async def resolve_communities(
     """Get communities information."""
     query = {"users": parent["rid"]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
+        url = "http://localhost:8011/getcommunity"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"community": data[0]} or None
+        data = await response.json(content_type="application/json")
+    return data["data"][0] or None
 
 
 @_resolver.field("posts")

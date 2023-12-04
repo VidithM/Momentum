@@ -23,10 +23,10 @@ async def resolve_users(
     """Get users information."""
     query = {"rids": parent["users"]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/get"
+        url = "http://localhost:8080/getuser"
         response = await session.get(url, json=query)
-        users = await response.json(content_type="text/json")
-    return {"users": users}
+        users = await response.json(content_type="application/json")
+    return users
 
 
 @_resolver.field("posts")
