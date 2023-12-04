@@ -1,5 +1,8 @@
 # Momentum Prototype
 
+TODO: Add architectural design image
+TODO: Check previous submissions and fix issues
+
 ## Description of all use cases with UI sketch
 
 ### Description
@@ -8,6 +11,7 @@
 We intend to create a Reddit-Twitter-like social media app. The application will support the creation of user accounts with customizable usernames and profile images. The main content of the app will be centered around community-generated posts. Users will be able to link/join their accounts to communities they are interested in. Community posts will be visible to all community members and may contain text as well as image content. Community members will also be able to leave comments on posts. Communities are identified by a title/name and will have a description and optional community image.
 **Use Cases**
 **1: Login**
+
 * Actors: All users must login to their accounts to use the application
 * Goals: The actors login in order to identify and authenticate themselves in the system
 * Preconditions: The login is performed from the landing page
@@ -17,6 +21,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: If successful, the actor will be redirected to their profile page. Otherwise, the page will alert them that the login failed
 
 **2: Reigstration**
+
 * Actors: All users must register accounts to use the application
 * Goals: The actors register in order to create identities for them to use on the application
 * Preconditions: The registration is performed from the registration page
@@ -26,6 +31,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: If successful, the actor will be redirected to their profile page. Otherwise, the page will alert them that the registration failed
 
 **3: Logout**
+
 * Actors: All users will logout in order to close their session on the client
 * Goals: The actors logout in order to close their session and prevent misuse of their accounts
 * Preconditions: The client maintains the actor's login information. The logout may be performed from any authenticated page (excludes landing and registration pages)
@@ -35,6 +41,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The client-side tokens will be cleared from the user's system and the actor is redirected to the landing page
 
 **4: Create Community**
+
 * Actors: Users who wish to create a community that does not currently exist
 * Goals: To create a community for posts/discussion surrounding the topic of the community
 * Preconditions: Communities are created from the actor's profile page
@@ -44,6 +51,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The new community will be displayed on the actor's list of communities on the profile page
 
 **5: Join Community**
+
 * Actors: Users who wish to join a community that interests them
 * Goals: To join a community for posts/discussion surrounding the topic of the community
 * Preconditions: Communities are joined from the actor's profile page
@@ -53,6 +61,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: If successful, the new community will be displayed on the actor's list of communities on the profile page. Otherwise, the page will alert them that the community joining failed
 
 **6: Create Post**
+
 * Actors: Users who wish to contribute to a community with a post
 * Goals: To post about something relevant to the topic of the community
 * Preconditions: Posts may be submitted from the page of a specific community
@@ -62,7 +71,8 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The new post will be displayed in the list of posts of the community. Other actors may leave comments on the post.
 
 **7: Comment on Post**
-* Actors: Users who wish to comment on an existing post 
+
+* Actors: Users who wish to comment on an existing post
 * Goals: To post about something relevant to the topic of the community
 * Preconditions: Comments are made from the community page of a specific community
 * Summary: The actor types their comment in a field adjacent to the post they wish to comment on
@@ -71,7 +81,8 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The new comment will be displayed underneath the post for which the comment was made
 
 **8: Go to Settings**
-* Actors: Users who wish to change some characteristics of their profile 
+
+* Actors: Users who wish to change some characteristics of their profile
 * Goals: To change some aspects of the actor's profile (profile image, username, password)
 * Preconditions: The settings page can be entered from any authenticated page
 * Summary: The actor presses the settings button in the toolbar
@@ -80,6 +91,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The actor is redirected to the settings page for their account
 
 **9: Update User Image**
+
 * Actors: Users who wish to change their profile image, which is displayed on posts and comments
 * Goals: To change the appearance of the actor to other users
 * Preconditions: Any update of user profile data must be done from the settings page
@@ -89,6 +101,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The image will now be applied on all posts and comments the actor makes
 
 **10: Update Username**
+
 * Actors: Users who wish to change their username, which is displayed on posts and comments
 * Goals: To change the username of the actor
 * Preconditions: Any update of user profile data must be done from the settings page
@@ -98,6 +111,7 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Postconditions: The username will now be applied on all posts and comments the actor makes. In addition, it will be seen on the actor's toolbar.
 
 **11: Update Password**
+
 * Actors: Users who wish to change their password
 * Goals: To change the password to be easier to remember, for example.
 * Preconditions: Any update of user profile data must be done from the settings page
@@ -110,9 +124,11 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 The current iteration is currently connected with the GraphQL/MariaDB backend and allows for creation of new accounts, logging in/logging out of existing accounts, the creation of new communities, and posting in communities. The general layout of the profile page as well as the community page has been established. No other features/pages are fully functional as of yet.
 
 ### UI Sketch
+
 The respective use case numbers are labelled on the transition arrows between pages
 ![UISketch](uisketch1.jpg)
 ![UISketch](uisketch2.jpg)
+
 ## Database design
 
 ### Description of data entities and relationships
@@ -165,8 +181,7 @@ Rather, the GQL interface searches the posts table for all posts by a specific u
 posts by a user.  Additionally, although the posts and comments have unique keys, this is for database safety reasons -
 they cannot exist without a user per the schema.
 
-Note that there is a many to many relationship between users and communities.  To provide this, we have a user_community table, which allows for a record
-of which users belong to a community and vice versa.
+The community table is unique, in that it is stored as a MongoDB document rather than a sql table. This allows us to keep a list of users in each community, and search that list to get all communities that a user belongs to.
 
 This is shown in more detail in the ERD.  Specifics of the tables are shown in the CREATE statements in the database design sql file,
 rather than repeated here.
@@ -190,53 +205,18 @@ CREATE TABLE IF NOT EXISTS `momentum`.`comments` (
     `post` int(10),
     PRIMARY KEY (`id`)
 );
-CREATE TABLE IF NOT EXISTS `momentum`.`communities` (
-    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `description` text,
-    `users` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
-);
+
 CREATE TABLE IF NOT EXISTS `momentum`.`posts` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `user` varchar(255) NOT NULL,
     `content` text NOT NULL,
-    `community` int(10) NOT NULL,
+    `community` VARCHAR(255) NOT NULL,
     `timestamp` DATETIME NOT NULL,
     `file` MEDIUMBLOB,
     PRIMARY KEY (`id`)
 );
-CREATE TABLE IF NOT EXISTS `momentum`.`users` (
-    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `communities` text,
-    `password` varchar(255) NOT NULL,
-    `username` varchar(255) NOT NULL,
-    `name` varchar(255) NOT NULL,
-    `email` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
-);
-CREATE TABLE IF NOT EXISTS `momentum`.`user_community` (
-    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `user_id` int(10),
-    `community_id`int(10),
-    PRIMARY KEY (`id`)
-);
+
 -- Sample Data
-INSERT INTO `users` (
-        `id`,
-        `communities`,
-        `password`,
-        `username`,
-        `name`,
-        `email`
-    )
-VALUES (
-        17,
-        '17',
-        'password',
-        'nmcclaran',
-        'Nathan McClaran',
-        'nmcclaran@tamu.edu'
-    );
 INSERT INTO `posts` (
         `id`,
         `user`,
@@ -249,12 +229,10 @@ VALUES (
         1,
         '17',
         'nmcclaran_3',
-        17,
+        "mongodb_id",
         '2023-09-29 22:41:58',
         NULL
     );
-INSERT INTO `communities` (`id`, `description`, `users`)
-VALUES (17, 'nmcclaran_2', '17');
 INSERT INTO `comments` (
         `id`,
         `user`,
@@ -287,24 +265,20 @@ VALUES (
         '2023-09-29 22:41:58',
         1
     );
-INSERT INTO `user_community` (`id`, `user_id`, `community_id`)
-VALUES
- (1, 3, 2),
- (2, 3, 1),
- (3, 2, 2),
- (4, 2, 5);
 
 ```
 
 ## Architectural design
 
-The Momentum project is designed as a three tier archetecture.  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
+The Momentum project is designed as a three tier archetecture (Although we note that the non-sql microservices have a fourth tier).  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
 
 The server itself is a graphql server, which manages interactions with the database and performs some of the relationship logic through resolvers.
 This allows for a simpler table, as relationships don't need to be managed directly in the database.
 
-The database is the third part of the architecture, and is a basic single schema four table MySQL database, running in a MariaDB Docker container.
-As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.
+We use three different databases - a redis database for users, a mongodb database for communities, and a sql database for posts and comments.  The user and community databases have restful microservices which translate from the GQL interface to the dbs.  The sql database is hooked directly into the DB.  We chose this design to preserve the GQL functionality and backwards compatibility.
+
+The database is the third part of the architecture, and has a basic single schema two table MySQL database, running in a MariaDB Docker container.
+As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.  We also have a MongoDB database and a Redis database.
 
 The communication between the client and server is done using JSON payloads over HTTP.
 
@@ -312,14 +286,17 @@ The communication between the client and server is done using JSON payloads over
 
 ### Running the Momentum application
 
-Instructions for running the databse is in the README file in `momentum_gql`. The frontend may be launched simply by opening `momentum_frontend/landing.html`
+To start the microservices, simply run docker compose up in the microservices folder.  The frontend may be launched simply by opening `momentum_frontend/landing.html`
 
-GQL server: `momentum_gql`
+GQL server: `microservices/momentum_gql`
+MongoDB interface: `microservices/mdb_interface`
+User interface: `microservices/users`
+
 GUI application: `momentum_frontend`
 
-Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and will need to be added via the sql commands.
+Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and can be added via the sql commands.  However, the system is designed to start empty, so creating data through the GUI is preferred.  Note that you must create a certain item before adding that item to another entity (IE user 1 must be created before adding to community 1, and vice versa.)
 
-**IMPORTANT NOTE**: You might encounter some adverse database behavior. Some of our database properties have changed since the last iteration. Please delete your existing Docker container if any issues occur.
+**IMPORTANT NOTE**: You might encounter some adverse database behavior. Some of our database properties have changed since the last iteration. Please delete your existing mariadb/sql Docker container if any issues occur.
 
 ### Video recordings of user acceptance tests
 
