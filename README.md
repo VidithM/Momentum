@@ -1,6 +1,7 @@
 # Momentum Prototype
 
-TODO: Add architectural design image
+TODO: Add Mongodb sample data
+TODO: Add Redis Sample Data
 TODO: Check previous submissions and fix issues
 
 ## Description of all use cases with UI sketch
@@ -273,26 +274,46 @@ VALUES (
 The Momentum project is designed as a three tier archetecture (Although we note that the non-sql microservices have a fourth tier).  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
 
 The server itself is a graphql server, which manages interactions with the database and performs some of the relationship logic through resolvers.
-This allows for a simpler table, as relationships don't need to be managed directly in the database.
+This allows for a simpler table, as relationships don't need to be managed directly in the database.  This communicates over http with the GQL protocol.  The GQL server serves as the posts/community microservice, and allows us to maintain the benefits of GQL (reduced load on uncessesary microservices) without major rewrites to the established frontend.
 
-We use three different databases - a redis database for users, a mongodb database for communities, and a sql database for posts and comments.  The user and community databases have restful microservices which translate from the GQL interface to the dbs.  The sql database is hooked directly into the DB.  We chose this design to preserve the GQL functionality and backwards compatibility.
+The user microservice uses a restful API written in Go. It communicates with a redis labs redis database for user information.  The community microservice uses a resful Python API communicating with a container based mongodb server.  We use three different databases - a redis database for users, a mongodb database for communities, and a sql database for posts and comments.  The user and community databases have restful microservices which translate from the GQL interface to the dbs.  The sql database is hooked directly into the DB.  We chose this design to preserve the GQL functionality and backwards compatibility.  Each of these communicates with http protocol.  The microservice apis communitcate with RESTFUL api protocols.
 
 The database is the third part of the architecture, and has a basic single schema two table MySQL database, running in a MariaDB Docker container.
 As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.  We also have a MongoDB database and a Redis database.
 
-The communication between the client and server is done using JSON payloads over HTTP.
+The communication between the client and server is done using JSON payloads over HTTP
+
+### Architectural diagram file
+
+![Architectural Design](Arch_design.png)
+
+### Division of Labor
+
+#### Nathan
+
+* GQL middleware/service registry
+* posts/comments api (Part of the GQL middleware)
+* Communities Microservice
 
 ## Prototype
 
 ### Running the Momentum application
 
-To start the microservices, simply run docker compose up in the microservices folder.  The frontend may be launched simply by opening `momentum_frontend/landing.html`
+#### Necessary Libraries
+
+For the backend, all you need is Docker.
+
+#### How to start
+
+To start the microservices, simply run docker compose up in the microservices folder.  The frontend may be launched simply by opening `momentum_frontend/landing.html`.
 
 GQL server: `microservices/momentum_gql`
 MongoDB interface: `microservices/mdb_interface`
 User interface: `microservices/users`
 
 GUI application: `momentum_frontend`
+
+#### Guidelines
 
 Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and can be added via the sql commands.  However, the system is designed to start empty, so creating data through the GUI is preferred.  Note that you must create a certain item before adding that item to another entity (IE user 1 must be created before adding to community 1, and vice versa.)
 
