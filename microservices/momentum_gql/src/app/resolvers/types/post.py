@@ -19,12 +19,12 @@ async def resolve_community(
     _info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get community information"""
-    query = {"rid": [parent["community"]]}
+    query = {"rid": parent["community"]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8005/getcommunity"
+        url = "http://localhost:8011/getcommunity"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return {"community": data[0]} or None
+        data = await response.json(content_type="application/json")
+    return data["data"][0]
 
 
 @_resolver.field("user")
