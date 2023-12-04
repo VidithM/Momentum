@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from ariadne import QueryType
 from graphql import GraphQLResolveInfo
 import aiohttp
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +18,27 @@ async def _search(
     terms: Dict[str, Any],
 ) -> List[int]:
     """Search users."""
+    search_terms = []
     if terms.get("rids"):
-        query = {"rids": terms.get("rids")}
+        str_rids = []
+        for term in terms.get("rids"):
+            str_rids.append(str(term))
+        search_terms = search_terms + str_rids
     elif terms.get("emails"):
-        query = {"emails": terms.get("emails")}
+        search_terms = search_terms + terms.get("emails")
+    query = {"terms": search_terms}
+    print(query)
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/search"
+        url = "http://host.docker.internal:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return data
+        print(response)
+        data = await response.json(content_type="application/json")
+        users = []
+        for user in data:
+            user = json.loads(user)
+            user["rid"] = int(user["rid"])
+            users.append(user)
+    return users
 
 
 @_resolver.field("search_users")

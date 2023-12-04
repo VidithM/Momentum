@@ -7,10 +7,7 @@ input DatetimeRangeInput {
 
 input SearchUsersInput {
     rids: [Int!]
-    usernames: [String!]
-    names: [Int!]
     emails: [EmailAddress!]
-    communities: [Int!]
 }
 
 input SearchCommentsInput {
@@ -57,6 +54,7 @@ input CreatePostInput {
 }
 
 input CreateUserInput {
+    rid: Int!
     name: String!
     username: String!
     password: String!
@@ -69,7 +67,7 @@ input UpdateUserInput {
     username: String
     password: String
     email: EmailAddress
-    communities: [Int!]
+    communities: [String!]
 }
 
 input DeleteUserCommInput {

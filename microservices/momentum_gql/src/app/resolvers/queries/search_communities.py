@@ -29,7 +29,7 @@ async def _search(
         else:
             query["users"] = {"$eq": terms.get("users")}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/getcommunity"
+        url = "http://host.docker.internal:8011/getcommunity"
         response = await session.get(url, json=query)
         data = await response.json(content_type="application/json")
     return data["data"]

@@ -6,6 +6,7 @@ from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
 import aiohttp
+import json
 from ...database import comments
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ async def resolve_community(
     """Get community information"""
     query = {"rid": parent["community"]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/getcommunity"
+        url = "http://host.docker.internal:8011/getcommunity"
         response = await session.get(url, json=query)
         data = await response.json(content_type="application/json")
     return data["data"][0]
@@ -33,12 +34,14 @@ async def resolve_user(
     _info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get user information."""
-    query = {"rid": str(parent["user"])}
+    query = {"terms": [str(parent["user"])]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/getuser"
+        url = "http://host.docker.internal:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="application/json")
-    return data
+        user = await response.json(content_type="application/json")
+        user = json.loads(user[0])
+        user["rid"] = int(user["rid"])
+    return user
 
 
 @_resolver.field("comments")
@@ -55,7 +58,9 @@ async def resolve_comments(
                 info,
                 terms,
             )
-            if rids != 0:
+            print(rids)
+            if rids:
+                print(await comments.search_by_rids(cur, info, rids))
                 return await comments.search_by_rids(cur, info, rids)
             else:
                 return None

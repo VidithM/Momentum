@@ -22,10 +22,10 @@ async def resolve_communities(
     """Get communities information."""
     query = {"users": parent["rid"]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/getcommunity"
+        url = "http://host.docker.internal:8011/getcommunity"
         response = await session.get(url, json=query)
         data = await response.json(content_type="application/json")
-    return data["data"][0] or None
+    return data["data"] or None
 
 
 @_resolver.field("posts")
@@ -57,7 +57,7 @@ async def resolve_comments(
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
             rids = await comments.search(
-                await cur,
+                cur,
                 info,
                 terms,
             )

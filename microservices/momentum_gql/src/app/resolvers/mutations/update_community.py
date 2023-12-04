@@ -20,7 +20,7 @@ async def _update_community(
 ) -> List[Any]:
     """Update a community."""
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/updatecommunity"
+        url = "http://host.docker.internal:8011/updatecommunity"
         response = await session.post(url, json=data)
         data = await response.json(content_type="text/json")
         print(data)
@@ -41,7 +41,7 @@ async def update_community(
     )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/getcommunity"
+        url = "http://host.docker.internal:8011/getcommunity"
         response = await session.get(url, json=query)
         data = await response.json(content_type="application/json")
     return {"community": data["data"][0]}

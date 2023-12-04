@@ -6,6 +6,7 @@ from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
 import aiohttp
+import json
 
 from ...database import posts
 
@@ -21,12 +22,24 @@ async def resolve_users(
     info: GraphQLResolveInfo,
 ) -> Optional[List[Dict[str, Any]]]:
     """Get users information."""
-    query = {"rids": parent["users"]}
+    print(parent)
+
+    rid_str = []
+    if parent.get("users"):
+        for item in parent.get("users", []):
+            rid_str.append(str(item))
+    query = {"terms": rid_str}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/getuser"
+        url = "http://host.docker.internal:8080/getuser"
         response = await session.get(url, json=query)
         users = await response.json(content_type="application/json")
-    return users
+        user_dicts = []
+        if users:
+            for item in users:
+                user = json.loads(item)
+                user["rid"] = int(user["rid"])
+                user_dicts.append(user)
+    return user_dicts
 
 
 @_resolver.field("posts")

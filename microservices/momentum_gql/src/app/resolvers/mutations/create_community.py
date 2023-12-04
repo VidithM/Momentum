@@ -20,7 +20,8 @@ async def _add_community(
 ) -> str:
     """Create a community."""
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/newcommunity"
+        data["users"] = []
+        url = "http://host.docker.internal:8011/newcommunity"
         response = await session.post(url, json=data)
         data = await response.json(content_type="text/json")
     return data["data"]
@@ -41,7 +42,7 @@ async def create_community(
     )
     query = {"rid": rid}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8011/getcommunity"
+        url = "http://host.docker.internal:8011/getcommunity"
         response = await session.get(url, json=query)
         data = await response.json(content_type="application/json")
         print(data)

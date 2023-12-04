@@ -6,6 +6,7 @@ from ariadne import ObjectType
 from graphql import GraphQLResolveInfo
 import aiomysql
 import aiohttp
+import json
 
 from ...database import posts, comments
 
@@ -32,12 +33,14 @@ async def resolve_user(
     _info: GraphQLResolveInfo,
 ) -> Optional[Dict[str, Any]]:
     """Get user information."""
-    query = {"rid": str(parent["user"])}
+    query = {"terms": [str(parent["user"])]}
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8080/getuser"
+        url = "http://host.docker.internal:8080/getuser"
         response = await session.get(url, json=query)
-        data = await response.json(content_type="text/json")
-    return data
+        user = await response.json(content_type="application/json")
+        user = json.loads(user[0])
+        user["rid"] = int(user["rid"])
+    return user
 
 
 @_resolver.field("comments")
@@ -54,7 +57,7 @@ async def resolve_comments(
                 info,
                 terms,
             )
-            if rids != 0:
+            if rids:
                 return await comments.search_by_rids(cur, info, rids)
             return None
 
@@ -67,6 +70,9 @@ async def resolve_comment(
     """Get parent information."""
     async with info.context["db"].acquire() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            return (await comments.search_by_rids(cur, info, [parent["parent"]]))[
-                0
-            ] or None
+            print(parent["parent"])
+            parents = await comments.search_by_rids(cur, info, [parent["parent"]])
+            if parents:
+                return parents[0]
+            else:
+                return None

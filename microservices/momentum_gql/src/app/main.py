@@ -32,7 +32,7 @@ async def on_startup():
     """Do startup stuff."""
     global DB_POOL
     DB_POOL = await aiomysql.create_pool(
-        host="127.0.0.1",
+        host="host.docker.internal",
         port=3306,
         user="root",
         password="rootpassword",
