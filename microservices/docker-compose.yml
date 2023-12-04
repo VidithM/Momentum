@@ -61,3 +61,12 @@ services:
       DB_NAME: "Momentum"
     # profiles:
     #   - mdbinterface
+  
+  users:
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_URI: redis://default:ZE3TpP3ruji8BcTHIDZ7PZTZnI1lQFhk@redis-10664.c299.asia-northeast1-1.gce.cloud.redislabs.com:10664
