@@ -4,8 +4,6 @@
 #
 #    pip-compile pyproject.toml
 #
---index-url https://artifactory.viasat.com/artifactory/api/pypi/pypi-viasat/simple
---extra-index-url https://artifactory.viasat.com/artifactory/api/pypi/wfs-pypi-virtual/simple
 
 dnspython==2.4.2
     # via pymongo
