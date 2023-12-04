@@ -128,7 +128,7 @@ mutation{
 
 mutation{
   update_community(input:{
-    rid: 17
+    rid: "rid"
     description: "nmcclaran_2"
     users: [17]
 
@@ -151,8 +151,6 @@ mutation{
 mutation{
   create_community(input:{
     description: "nmcclaran"
-    users: [17]
-
   })
 
   {

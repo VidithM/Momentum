@@ -2,11 +2,10 @@
 
 ## Local development
 
-Create a virtual environment and install the project in
-dev mode by using the venv target in the Makefile.
+Create a virtual environment
 
 ```bash
-make venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -26,18 +25,10 @@ pip install -r requirements
 
 While in the top level directory (and in virtual environment)
 
-`python -m app --port=8020`
-
-### Run the Sequel Server
-
-```bash
-docker compose up
-```
-
-The commands for creating the tables are under the python create_table funciton in the database folder.
+`python -m app --port=8011`
 
 ### API
 
 Get or Post requests to _____
 
-Otherwise, post to localhost:8020 a proper gql request.
+Otherwise, post to localhost:8011 per the restful api described in Main.  test_api.py automates this, use this to test.
