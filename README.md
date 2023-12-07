@@ -269,6 +269,23 @@ VALUES (
 
 ```
 
+### Mongodb code to design database and sample data file
+
+```txt
+
+db.collection.insertOne(
+   {
+    _id: ObjectId('656d175c0f313512c360703d'),
+    description: 'nmcclaran',
+    users: [
+        12,
+        1
+    ]
+}
+);
+
+```
+
 ## Architectural design
 
 The Momentum project is designed as a three tier archetecture (Although we note that the non-sql microservices have a fourth tier).  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
