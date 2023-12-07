@@ -272,8 +272,9 @@ VALUES (
 ### Mongodb code to design database and sample data file
 
 ```txt
+use("Momentum");
 
-db.collection.insertOne(
+db.customers.insertOne(
    {
     _id: ObjectId('656d175c0f313512c360703d'),
     description: 'nmcclaran',
