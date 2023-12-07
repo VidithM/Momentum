@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QWebEngineView>
 #include <QWebEngineSettings>
+#include <QResource>
 
 #include <iostream>
 using std::cout;
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 
     QWebEngineView webView;
 
-    QString landingPath = "Assets/landing.html";
+    QString landingPath = "Assets/momentum_frontend/landing.html";
     QString currentDir = QDir::currentPath();
     QString fullPath = QDir(currentDir).filePath(landingPath);
     webView.page()->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);

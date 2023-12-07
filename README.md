@@ -1,15 +1,11 @@
 # Momentum Prototype
 
-TODO: Add Mongodb sample data
-TODO: Add Redis Sample Data
-TODO: Check previous submissions and fix issues
-
 ## Description of all use cases with UI sketch
 
 ### Description
 
 **Overview of functionality**
-We intend to create a Reddit-Twitter-like social media app. The application will support the creation of user accounts with customizable usernames and profile images. The main content of the app will be centered around community-generated posts. Users will be able to link/join their accounts to communities they are interested in. Community posts will be visible to all community members and may contain text as well as image content. Community members will also be able to leave comments on posts. Communities are identified by a title/name and will have a description and optional community image.
+We intend to create a Reddit-Twitter-like social media app. The application will support the creation of user accounts with customizable usernames. The main content of the app will be centered around community-generated posts. Users will be able to link/join their accounts to communities they are interested in. Community posts will be visible to all community members and may contain text. Community members will also be able to leave comments on posts. Communities are identified by a title/name and will have a description.
 **Use Cases**
 **1: Login**
 
@@ -81,55 +77,12 @@ We intend to create a Reddit-Twitter-like social media app. The application will
 * Steps: 1. On the profile page, go to the desired community 2. In the community page, find the desired post and write the comment 3. Submit the comment
 * Postconditions: The new comment will be displayed underneath the post for which the comment was made
 
-**8: Go to Settings**
-
-* Actors: Users who wish to change some characteristics of their profile
-* Goals: To change some aspects of the actor's profile (profile image, username, password)
-* Preconditions: The settings page can be entered from any authenticated page
-* Summary: The actor presses the settings button in the toolbar
-* Related use cases: See Update User Image, Update Username, Update Password
-* Steps: 1. On any authenticated page, press settings button in the toolbar
-* Postconditions: The actor is redirected to the settings page for their account
-
-**9: Update User Image**
-
-* Actors: Users who wish to change their profile image, which is displayed on posts and comments
-* Goals: To change the appearance of the actor to other users
-* Preconditions: Any update of user profile data must be done from the settings page
-* Summary: The actor selects the option to upload a new profile image and selects a file from their device
-* Related use cases: See Update Username, Update Password, Go to Settings
-* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, select the option for a new profile image 3. Find a new image on the actor's filesystem 4. Upload the desired image
-* Postconditions: The image will now be applied on all posts and comments the actor makes
-
-**10: Update Username**
-
-* Actors: Users who wish to change their username, which is displayed on posts and comments
-* Goals: To change the username of the actor
-* Preconditions: Any update of user profile data must be done from the settings page
-* Summary: The actor types their new username and confirms it
-* Related use cases: See Update User Image, Update Password, Go to Settings
-* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, type a new username 3. Submit the username
-* Postconditions: The username will now be applied on all posts and comments the actor makes. In addition, it will be seen on the actor's toolbar.
-
-**11: Update Password**
-
-* Actors: Users who wish to change their password
-* Goals: To change the password to be easier to remember, for example.
-* Preconditions: Any update of user profile data must be done from the settings page
-* Summary: The actor types their new password and confirms it
-* Related use cases: See Update User Image, Update Password, Go to Settings
-* Steps: 1. On any authenticated page, go to settings (in the toolbar) 2. In the settings page, type a new password 3. Submit the password
-* Postconditions: The new password will now be required for the user to login.
-
-**Current Status**
-The current iteration is currently connected with the GraphQL/MariaDB backend and allows for creation of new accounts, logging in/logging out of existing accounts, the creation of new communities, and posting in communities. The general layout of the profile page as well as the community page has been established. No other features/pages are fully functional as of yet.
 
 ### UI Sketch
 
 The respective use case numbers are labelled on the transition arrows between pages
 ![UISketch](uisketch1.jpg)
 ![UISketch](uisketch2.jpg)
-
 ## Database design
 
 ### Description of data entities and relationships
@@ -287,9 +240,34 @@ db.customers.insertOne(
 
 ```
 
+### RedisLabs Go code for sample data insertion
+```go
+import (
+    "context"
+    "github.com/redis/go-redis/v9"
+)
+
+func main(){
+        redisURI, _ := // Redis URI here
+	opt, err := redis.ParseURL(redisURI)
+	redisClient := redis.NewClient(opt)
+
+        // Create a new entry
+        redisClient.Set(context.Background(), "key1", "{val1_name: val1, val2_name: val2}");
+        // Creates the following entry in Redis:
+        /*
+        key1:
+            {
+                val1_name: val1,
+                val2_name: val2
+            }
+        */
+}
+```
+
 ## Architectural design
 
-The Momentum project is designed as a three tier archetecture (Although we note that the non-sql microservices have a fourth tier).  The client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules.
+The Momentum project is designed as a three tier archetecture (Although we note that the non-sql microservices have a fourth tier).  The web client contains a plain HTML/JS GUI for user interactions. We utilize ES6 JavaScript to allow us to separate our business logic (such as GraphQL interface code) in distinct modules. The desktop client is built with Qt and leverages the QtWebEngine widget to allow us to easily port our existing web application resources to a native environment.
 
 The server itself is a graphql server, which manages interactions with the database and performs some of the relationship logic through resolvers.
 This allows for a simpler table, as relationships don't need to be managed directly in the database.  This communicates over http with the GQL protocol.  The GQL server serves as the posts/community microservice, and allows us to maintain the benefits of GQL (reduced load on uncessesary microservices) without major rewrites to the established frontend.
@@ -299,7 +277,7 @@ The user microservice uses a restful API written in Go. It communicates with a r
 The database is the third part of the architecture, and has a basic single schema two table MySQL database, running in a MariaDB Docker container.
 As is common with industry databases, the database itself is not accessed outside of its specific API, in this case the gql server.  We also have a MongoDB database and a Redis database.
 
-The communication between the client and server is done using JSON payloads over HTTP
+The communication between the client and server is done using JSON payloads over HTTP. The client dynamically generates the DOM content based on the results of its queries.
 
 ### Architectural diagram file
 
@@ -313,30 +291,33 @@ The communication between the client and server is done using JSON payloads over
 * posts/comments api (Part of the GQL middleware)
 * Communities Microservice
 
-## Prototype
+### Vidith
+* Frontend (Desktop/Web apps)
+* users microservice
+
 
 ### Running the Momentum application
 
 #### Necessary Libraries
 
-For the backend, all you need is Docker.
+For the backend (GQL interface + microservices), all you need is Docker.
+
+For the frontend, the desktop application must be built from source. You need to install Qt for this, and open an existing project by opening the `momentum_desktop/Momentum/Momentum.pro` file in Qt Creator. Now, you must do a dry run build of the app to establish the build directory in `momentum_desktop`. Once the build directory is established (it will look something like `build-Momentum-Qt_6_6_1_for_macOS-Debug`), you need to copy `momentum_desktop/Assets` to `build/Momentum.app/Contents/<platform>`, where platform will be based on which platform you are on. Now, you can build and run the application in Qt Creator.
+
 
 #### How to start
 
-To start the microservices, simply run docker compose up in the microservices folder.  The frontend may be launched simply by opening `momentum_frontend/landing.html`.
-
-GQL server: `microservices/momentum_gql`
-MongoDB interface: `microservices/mdb_interface`
-User interface: `microservices/users`
-
-GUI application: `momentum_frontend`
+To start the microservices, simply run `docker-compose build` followed by `docker-compose up` in the microservices folder. This must be done before you can use the application.
+The web frontend may be launched simply by opening `momentum_frontend/landing.html` in any web browser.
+Instructions for the desktop frontend are given above.
 
 #### Guidelines
+Data and tables are not persistent, and can be added via the sql commands.  However, the system is designed to start empty, so creating data through the GUI is preferred.  Note that you must create a certain item before adding that item to another entity (IE user 1 must be created before adding to community 1, and vice versa.)
 
-Database is run via docker-compose in momentup_gql.  Data and tables are not persistent, and can be added via the sql commands.  However, the system is designed to start empty, so creating data through the GUI is preferred.  Note that you must create a certain item before adding that item to another entity (IE user 1 must be created before adding to community 1, and vice versa.)
+**IMPORTANT NOTE**: Some of the pages may take a few seconds to load due to remote data accesses. Please be patient.
 
 **IMPORTANT NOTE**: You might encounter some adverse database behavior. Some of our database properties have changed since the last iteration. Please delete your existing mariadb/sql Docker container if any issues occur.
 
 ### Video recordings of user acceptance tests
 
-[YouTube Link](https://youtu.be/WZka9VaFppI)
+[Google Drive Link](https://drive.google.com/drive/folders/1j-LUc5E4nrPo2Mf2TvfLPKwC3DBvrPZp?usp=sharing)
