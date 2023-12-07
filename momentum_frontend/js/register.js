@@ -18,8 +18,9 @@ const register = async () => {
         alert('Confirmation password does not match!');
         return;
     }
-
-    let res = await gql.register_user(email, username, name, password);
+    let rid = Date.now() % 1e9;
+    console.log(rid);
+    let res = await gql.register_user(rid, email, username, name, password);
     if(res == null){
         alert('Email is already in use!');
         return;

@@ -15,19 +15,16 @@ type UserRequest struct {
 }
 
 type UserSchema struct {
-	RID 	 string `json:"rid"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Name 	 string `json:"name"`
-	Email	 string `json:"email"`
+	RID 	 string `json:"rid,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+	Name 	 string `json:"name,omitempty"`
+	Email	 string `json:"email,omitempty"`
 }
 
 func main() {
 	ctx := context.Background()
-	redisURI, ok := os.LookupEnv("REDIS_URI")
-	if !ok {
-		redisURI = "redis://default:ZE3TpP3ruji8BcTHIDZ7PZTZnI1lQFhk@redis-10664.c299.asia-northeast1-1.gce.cloud.redislabs.com:10664"
-	}
+	redisURI, _ := os.LookupEnv("REDIS_URI")
 	opt, err := redis.ParseURL(redisURI)
 	if err != nil {
 		panic(err)
@@ -48,7 +45,7 @@ func main() {
 			return
 		}
 		defer r.Body.Close()
-		fmt.Println("Received request body:", string(reqBody))
+		fmt.Println("Received get request body:", string(reqBody))
 		// Unpack into UserRequest struct
 		var reqContent UserRequest
 		err = json.Unmarshal(reqBody, &reqContent)
@@ -62,15 +59,25 @@ func main() {
 		for i := 0; i < len(reqContent.Terms); i++ {
 			// Get the search term, query JSON from Redis
 			searchTerm := reqContent.Terms[i]
+			exists, err := redisClient.Exists(ctx, searchTerm).Result()
+			if err != nil {
+				http.Error(w, "Error querying Redis for existence of search term", http.StatusBadRequest)
+				return
+			}
+			if exists != 1 {
+				fmt.Printf("Requested user w/ search term %s does not exist\n", searchTerm)
+				continue
+			}
 			userJson, err := redisClient.Get(ctx, searchTerm).Result()
 			if err != nil {
-				http.Error(w, "Error querying Redis for RID", http.StatusBadRequest)
+				http.Error(w, "Error querying Redis for search term", http.StatusBadRequest)
 				return
 			}
 			resContent = append(resContent, userJson)
 		}
 		// Convert the raw results into JSON
 		resContentJson, err := json.Marshal(resContent)
+		fmt.Println(string(resContentJson))
 		if err != nil {
 			http.Error(w, "Error encoding JSON", http.StatusBadRequest)
 			return
@@ -92,7 +99,8 @@ func main() {
 			return
 		}
 		defer r.Body.Close()
-		fmt.Println("Received request body:", string(reqBody))
+		fmt.Println("Received update request body:", string(reqBody))
+
 		// Unpack into UserSchema struct
 		var reqContent UserSchema
 		err = json.Unmarshal(reqBody, &reqContent)
@@ -100,15 +108,51 @@ func main() {
 			http.Error(w, "Error decoding JSON", http.StatusBadRequest)
 			return
 		}
-		// extract RID, email, write to Redis
+
+		// extract RID, email
 		RID := reqContent.RID
 		email := reqContent.Email
-		err = redisClient.Set(ctx, RID, string(reqBody), 0).Err()
+		// check if object already exists. If so, get it and update the fields specified in req
+		exists, err := redisClient.Exists(ctx, RID).Result()
+		if err != nil {
+			http.Error(w, "Error querying Redis for existence of RID", http.StatusBadRequest)
+			return
+		}
+		var resContent UserSchema
+		if exists == 1 {
+			// does exist; make resContent the existing object and update
+			existingJson, err := redisClient.Get(ctx, RID).Result()
+			if err != nil { 
+				http.Error(w, "Error querying Redis for RID (RID exists)", http.StatusBadRequest)
+			}
+			err = json.Unmarshal([]byte(existingJson), &resContent) 
+			if reqContent.RID != "" {
+				resContent.RID = reqContent.RID
+			}
+			if reqContent.Username != "" {
+				resContent.Username = reqContent.Username
+			}
+			if reqContent.Password != "" {
+				resContent.Password = reqContent.Password
+			}
+			if reqContent.Name != "" {
+				resContent.Name = reqContent.Name
+			}
+			if reqContent.Email != "" {
+				resContent.Email = reqContent.Email
+			}
+		} else {
+			// does not exist; make resContent the same as request
+			resContent = reqContent
+		}
+
+		resContentJson, err := json.Marshal(resContent)
+		err = redisClient.Set(ctx, RID, string(resContentJson), 0).Err()
 		if err != nil {
 			http.Error(w, "Error writing User to Redis", http.StatusBadRequest)
 			return
 		}
-		err = redisClient.Set(ctx, email, string(reqBody), 0).Err()
+		err = redisClient.Set(ctx, email, string(resContentJson), 0).Err()
 		if err != nil {
 			http.Error(w, "Error writing User to Redis", http.StatusBadRequest)
 			return
