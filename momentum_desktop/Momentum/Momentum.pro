@@ -12,6 +12,7 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
 
+RESOURCES +=
 
 
 # Default rules for deployment.
