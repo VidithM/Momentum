@@ -34,10 +34,11 @@ async def _search(
         print(response)
         data = await response.json(content_type="application/json")
         users = []
-        for user in data:
-            user = json.loads(user)
-            user["rid"] = int(user["rid"])
-            users.append(user)
+        if data != None:
+            for user in data:
+                user = json.loads(user)
+                user["rid"] = int(user["rid"])
+                users.append(user)
     return users
 
 
